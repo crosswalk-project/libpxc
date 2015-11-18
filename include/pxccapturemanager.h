@@ -25,9 +25,16 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
-#include <string.h>
 #include "pxccapture.h"
 #include "pxcvideomodule.h"
+
+#ifdef _WIN32
+#include <string.h>
+#define PXC_STRCPY(_DST, _SRC, _SIZE) wcscpy_s<_SIZE>(_DST, _SRC)
+#else
+#include <string>
+#define PXC_STRCPY(_DST, _SRC, _SIZE) wcsncpy(_DST, _SRC, _SIZE)
+#endif
 
 /** 
     The CaptureManager interface provides the following features:
@@ -87,10 +94,9 @@ public:
         @param[in] didx     The optional device index.
     */
     void __inline FilterByDeviceInfo(pxcCHAR *name, pxcCHAR *did, pxcI32 didx) {
-        PXCCapture::DeviceInfo dinfo;
-        memset(&dinfo,0,sizeof(dinfo));
-        if (name) wcscpy_s<sizeof(dinfo.name)/sizeof(pxcCHAR)>(dinfo.name,name);
-        if (did) wcscpy_s<sizeof(dinfo.did)/sizeof(pxcCHAR)>(dinfo.did,did);
+        PXCCapture::DeviceInfo dinfo = {};
+        if (name) PXC_STRCPY(dinfo.name, name, sizeof(dinfo.name)/sizeof(pxcCHAR));
+        if (did) PXC_STRCPY(dinfo.did, did, sizeof(dinfo.did)/sizeof(pxcCHAR));
         dinfo.didx=didx;
         FilterByDeviceInfo(&dinfo);
     }
@@ -231,4 +237,16 @@ public:
         @return The number of frames.
     */
     virtual pxcI32 PXCAPI QueryNumberOfFrames(void)=0;
+
+    /**
+    @brief Enable detection of device rotation. Call function PXCImage::QueryRotation on current image to query rotation data.
+    @param[in] enableFlag       If true, enable detection of device rotation, otherwise disable.
+    @return PXC_STATUS_NO_ERROR         Successful execution.
+    */
+    virtual pxcStatus PXCAPI EnableDeviceRotation(pxcBool enableFlag) = 0;
+
+    /**
+    @brief Query if device rotation enabled.
+    */
+    virtual pxcBool PXCAPI IsDeviceRotationEnabled() = 0;
 };

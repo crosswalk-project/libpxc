@@ -85,6 +85,7 @@ public:
     /**
         @brief Apply the configuration changes to the module.
         This method must be called in order to apply the current configuration changes.
+		@note the actual change will have an affect from the next tracked frame.
         @return PXC_STATUS_NO_ERROR - operation succeeded.
         @return PXC_STATUS_DATA_NOT_INITIALIZED - configuration was not initialized.\n                        
     */
@@ -124,7 +125,7 @@ public:
         The user name will be used to save and retrieve specific measurements (calibration) for this user.
         @param[in] userName - the name of the current user.
         @return PXC_STATUS_NO_ERROR - operation succeeded.
-        @return PXC_STATUS_PARAM_UNSUPPORTED - illegal user name(e.g. an empty string)
+        @return PXC_STATUS_PARAM_UNSUPPORTED - illegal user name(e.g. an empty string)  or tracking mode is set to TRACKING_MODE_EXTREMITIES or TRACKING_MODE_CURSOR.
     */
     virtual pxcStatus PXCAPI SetUserName(const pxcCHAR *userName) = 0;
 
@@ -150,7 +151,7 @@ public:
         @param[in] time - the period in milliseconds over which the average speed will be calculated (a value of 0 will return the current speed).
         
         @return PXC_STATUS_NO_ERROR - operation succeeded. 
-        @return PXC_STATUS_PARAM_UNSUPPORTED - one of the arguments is invalid.
+        @return PXC_STATUS_PARAM_UNSUPPORTED - one of the arguments is invalid  or tracking mode is set to TRACKING_MODE_EXTREMITIES or TRACKING_MODE_CURSOR. 
         
         @see PXCHandData::JointType
         @see PXCHandData::JointSpeedType
@@ -163,7 +164,7 @@ public:
         @param[in] jointLabel - the identifier of the joint
         
         @return PXC_STATUS_NO_ERROR - operation succeeded.
-        @return PXC_STATUS_PARAM_UNSUPPORTED - invalid joint label.
+        @return PXC_STATUS_PARAM_UNSUPPORTED - invalid joint label  or tracking mode is set to TRACKING_MODE_EXTREMITIES or TRACKING_MODE_CURSOR.
         
         @see PXCHandData::JointType
     */
@@ -204,11 +205,14 @@ public:
 
     /**
         @brief Set the tracking mode, which determines the algorithm that will be applied for tracking hands.
+		
         @param[in] trackingMode - the tracking mode to be set. Possible values are:\n
-          TRACKING_MODE_FULL_HAND   - track the entire hand skeleton.\n
-          TRACKING_MODE_EXTREMITIES - track only the mask and the extremities of the hand (the points that confine the tracked hand).\n
-        
+			TRACKING_MODE_FULL_HAND   - track the entire hand skeleton.\n
+			TRACKING_MODE_EXTREMITIES - track only the mask and the extremities of the hand (the points that confine the tracked hand).\n
+			TRACKING_MODE_CURSOR - track cursor point and cursor gestures/alerts.
+
         @return PXC_STATUS_NO_ERROR - operation succeeded. 
+		@return PXC_STATUS_PARAM_UNSUPPORTED - TrackingModeType is invalid.
         
         @see PXCHandData::TrackingModeType
     */
@@ -221,7 +225,7 @@ public:
         @see SetTrackingMode
         @see PXCHandData::TrackingModeType
     */
-    virtual PXCHandData::TrackingModeType  PXCAPI QueryTrackingMode() = 0;
+    virtual PXCHandData::TrackingModeType PXCAPI QueryTrackingMode() = 0;
 
     /**
         @brief Enable or disable the hand stabilizer feature.\n
@@ -231,6 +235,7 @@ public:
         
         @param[in] enableFlag - true to enable the hand stabilizer; false to disable it.
         @return PXC_STATUS_NO_ERROR - operation succeeded. 
+		@return PXC_STATUS_PARAM_UNSUPPORTED - tracking mode is set to TRACKING_MODE_EXTREMITIES or TRACKING_MODE_CURSOR.
     */
     virtual pxcStatus PXCAPI EnableStabilizer(pxcBool enableFlag) = 0;
 
@@ -247,7 +252,7 @@ public:
         @param[in] smoothingValue - a float value between 0 (not smoothed) and 1 (maximal smoothing).
         
         @return PXC_STATUS_NO_ERROR - operation succeeded. 
-        @return PXC_STATUS_PARAM_UNSUPPORTED - invalid smoothing value.
+        @return PXC_STATUS_PARAM_UNSUPPORTED - invalid smoothing value or tracking mode is set to TRACKING_MODE_EXTREMITIES or TRACKING_MODE_CURSOR.
     */
     virtual pxcStatus PXCAPI SetSmoothingValue(pxcF32 smoothingValue) = 0;
 
@@ -268,7 +273,7 @@ public:
 
         @param[in] enableFlag - true if the normalized skeleton should be calculated, otherwise false.
         @return PXC_STATUS_NO_ERROR - operation succeeded. 
-        
+        @return PXC_STATUS_PARAM_UNSUPPORTED - tracking mode is set to TRACKING_MODE_EXTREMITIES or TRACKING_MODE_CURSOR.
         @see PXCHandData::IHand::QueryNormalizedJoint
     */
     virtual pxcStatus PXCAPI EnableNormalizedJoints(pxcBool enableFlag) = 0;
@@ -284,6 +289,7 @@ public:
      The hand segmentation image is an image mask of the tracked hand, where the hand pixels are white and all other pixels are black.
      @param[in] enableFlag - true if the segmentation image should be calculated, false otherwise.
      @return PXC_STATUS_NO_ERROR - operation succeeded. 
+	 @return PXC_STATUS_PARAM_UNSUPPORTED - tracking mode is set to TRACKING_MODE_CURSOR.
     */
     virtual pxcStatus PXCAPI EnableSegmentationImage(pxcBool enableFlag) = 0;
 
@@ -300,6 +306,7 @@ public:
      @note This option doesn't affect the quality of the tracking, but only the availability of the joints info.
      @param[in] enableFlag - true to enable joint tracking, false to disable it.
      @return PXC_STATUS_NO_ERROR - operation was successful
+	 @return PXC_STATUS_PARAM_UNSUPPORTED - tracking mode is set to TRACKING_MODE_EXTREMITIES or TRACKING_MODE_CURSOR.
     */
     virtual pxcStatus PXCAPI EnableTrackedJoints(pxcBool enableFlag) = 0;
 
@@ -496,7 +503,7 @@ public:
     @see SetUserName
     @param[in] age the expected age of the players
     @return PXC_STATUS_NO_ERROR - operation succeeded. 
-    @return PXC_STATUS_PARAM_UNSUPPORTED for illegal ages 
+    @return PXC_STATUS_PARAM_UNSUPPORTED for illegal ages or tracking mode is set to TRACKING_MODE_EXTREMITIES or TRACKING_MODE_CURSOR 
     */
     virtual pxcStatus PXCAPI SetDefaultAge(const pxcI32 age) = 0;
     
@@ -508,6 +515,13 @@ public:
     */
     virtual const pxcI32 PXCAPI QueryDefaultAge() = 0;
 
-    
+	/**
+     @brief Retrieve the activation status of the input tracking mode.
+     @return true if the input tracking mode is enabled.
+
+	  @see SetTrackingMode
+    */
+    virtual pxcBool PXCAPI IsTrackingModeEnabled(PXCHandData::TrackingModeType trackingMode) = 0;
+
 };
  

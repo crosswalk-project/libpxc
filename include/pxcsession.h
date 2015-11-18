@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pxcversion.h"
 #include "pxcimage.h"
 #include "pxcaudio.h"
+#include "pxcmetadata.h"
 
 class PXCSenseManager;
 class PXCCaptureManager;
@@ -48,13 +49,18 @@ extern "C" PXCSession* PXCAPI PXCSession_Create(void);
     The application can query and create instances of I/O and algorithm module
     implementations.
 
-    The interface extends PXCMetadata. Use QueryInstance<PXCMetadata>() to access 
+    The interface extends PXCMetadata. Use QueryMetadata() to access 
     the PXCMetadata features.
 */
 class PXCSession:public PXCBase {
 public:
     PXC_CUID_OVERWRITE(PXC_UID('S','E','S',' '));
 
+	/**
+		Metadata types for feedback information attached to current session
+	*/
+	PXC_DEFINE_UID(METADATA_FEEDBACK_SAMPLE_INFO, 'P', 'H', 'S', 'M');
+	PXC_DEFINE_UID(METADATA_FEEDBACK_FRAMEWORK_INFO, 'P', 'H', 'F', 'M');
     /** 
         @structure ImplVersion
         Describe the video streams requested by a module implementation.
@@ -364,6 +370,14 @@ public:
     __inline static PXCSession* CreateInstance(void) {
         return PXCSession_Create();
     }
+
+	/**
+	@brief    A helper function to access PXCMetadata instance
+	*/
+	__inline PXCMetadata* QueryMetadata(void) {
+		return QueryInstance<PXCMetadata>();
+	}
+
 };
 
 /** 

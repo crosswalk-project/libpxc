@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2015, Intel Corporation
+Copyright (c) 2013-2015, Intel Corporation
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -24,29 +24,31 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#pragma once 
 
-#define PXC_VERSION_MAJOR    7 
-#define PXC_VERSION_MINOR    0 
-#define PXC_VERSION_BUILD    23 
-#define PXC_VERSION_REVISION 6161 
+/** @file PXCPersonTrackingModule.h
+    Defines the PXCPersonTrackingModule interface, which gives access to the person module's configuration and output data.
+ */
+#pragma once
+#include "pxcbase.h"
 
-#define RSSDK_REG_DEV           TEXT("Software\\Intel\\RSSDK") 
-#define RSSDK_REG_DEV32         TEXT("Software\\Wow6432Node\\Intel\\RSSDK") 
+class PXCPersonTrackingConfiguration;
+class PXCPersonTrackingData;
 
-#define RSSDK_REG_RUNTIME       TEXT("Software\\Intel\\RSSDK\\v7") 
-#define RSSDK_REG_RUNTIME32     TEXT("Software\\Wow6432Node\\Intel\\RSSDK\\v7") 
+/**
+	@Class PXCPersonTrackingModule 
+*/
+class PXCPersonTrackingModule : public PXCBase 
+{
+public:
+	PXC_CUID_OVERWRITE(PXC_UID('P','O','T','M'));
 
-#define RSSDK_REG_DISPATCH      RSSDK_REG_RUNTIME   TEXT("\\Dispatch") 
-#define RSSDK_REG_DISPATCH32    RSSDK_REG_RUNTIME32 TEXT("\\Dispatch") 
+	/** 
+		@brief returns current configuration.
+	*/
+	virtual PXCPersonTrackingConfiguration* PXCAPI QueryConfiguration() = 0;
 
-#define RSSDK_REG_DISPATCH_VERSION TEXT("Software\\Intel\\RSSDK\\v%d\\Dispatch") 
-#define RSSDK_MIN_CAPTURE_VERSION  2 
-
-#define RSDCM_REG_DEV           TEXT("Software\\Intel\\RSDCM") 
-#define RSDCM_REG_DEV32         TEXT("Software\\Wow6432Node\\Intel\\RSDCM") 
-
-#define STR(x) #x 
-#define RS_COPYRIGHT(x) "Copyright(C) " STR(x) "-2015, Intel Corporation. All Rights Reserved." 
-
-#define STR_SDK_VERSION(MAJVER,MINVER,SUBVER,REV) STR(MAJVER) "." STR(MINVER) "." STR(SUBVER) "." STR(REV) 
+	/** 
+		@brief returns latest available output data.
+	*/
+	virtual PXCPersonTrackingData* PXCAPI QueryOutput() = 0;
+};

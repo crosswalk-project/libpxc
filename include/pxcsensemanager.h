@@ -29,15 +29,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pxccapturemanager.h"
 #include "pxcsession.h"
 #include "pxcfacemodule.h"
-#include "pxcemotion.h"
 #include "pxctracker.h"
 #include "pxchandmodule.h"
 #include "pxcblobmodule.h"
+#include "pxcpersontrackingmodule.h"
 #include "pxctouchlesscontroller.h"
 #include "pxc3dseg.h"
 #include "pxc3dscan.h"
 #include "pxcsceneperception.h"
 #include "pxcenhancedvideo.h"
+#include "pxcobjectrecognitionmodule.h"
 
 
 /**
@@ -160,6 +161,15 @@ public:
         return QuerySample(PXCHandModule::CUID);
     }
 
+	   /**
+        @brief    Return the captured sample for the object recognition module.
+        The captured sample is managed internally by the SenseManager. Do not release the sample.
+        @return The sample instance, or NULL if the captured sample is not available.
+    */
+    __inline PXCCapture::Sample* QueryObjectRecognitionSample(void) {
+		return QuerySample(PXCObjectRecognitionModule::CUID);
+    }
+
     /**
         @brief    Return the captured sample for the blob module.
         The captured sample is managed internally by the SenseManager. Do not release the sample.
@@ -169,6 +179,16 @@ public:
         return QuerySample(PXCBlobModule::CUID);
     }
 
+	  /**
+        @brief    Return the captured sample for the Person tracking module.
+        The captured sample is managed internally by the SenseManager. Do not release the sample.
+        @return The sample instance, or NULL if the captured sample is not available.
+    */
+	__inline PXCCapture::Sample* QueryPersonTrackingSample(void) {
+		return QuerySample(PXCPersonTrackingModule::CUID);
+    }
+
+
     /**
         @brief    Return the captured sample for the scene perception module.
         The captured sample is managed internally by the SenseManager. Do not release the sample.
@@ -176,15 +196,6 @@ public:
     */
     __inline PXCCapture::Sample* QueryScenePerceptionSample(void) {
         return QuerySample(PXCScenePerception::CUID);
-    }
-
-    /**
-        @brief    Return the captured sample for the emotion module.
-        The captured sample is managed internally by the SenseManager. Do not release the sample.
-        @return The sample instance, or NULL if the captured sample is not available.
-    */
-    __inline PXCCapture::Sample* QueryEmotionSample(void) {
-        return QuerySample(PXCEmotion::CUID);
     }
 
     /**
@@ -225,15 +236,9 @@ public:
         return instance?instance->QueryInstance<PXCFaceModule>():0; 
     }
 
-    /**
-        @brief    Return the emotion module instance. Between AcquireFrame/ReleaseFrame, the function returns
-        NULL if the specified module hasn't completed processing the current frame of image data.
-        The instance is managed internally by the SenseManager. Do not release the instance.
-        @return The module instance.
-    */
-    __inline PXCEmotion* QueryEmotion(void) { 
-        PXCBase *instance=QueryModule(PXCEmotion::CUID);
-        return instance?instance->QueryInstance<PXCEmotion>():0; 
+	__inline PXCPersonTrackingModule* QueryPersonTracking(void) {
+		PXCBase *instance = QueryModule(PXCPersonTrackingModule::CUID);
+		return instance ? instance->QueryInstance<PXCPersonTrackingModule>() : 0;
     }
 
     /**
@@ -259,6 +264,17 @@ public:
         return instance?instance->QueryInstance<PXCHandModule>():0;
     }
 
+	/**
+        @brief    Return the object recognition module instance. Between AcquireFrame/ReleaseFrame, the function returns
+        NULL if the specified module hasn't completed processing the current frame of image data.
+        The instance is managed internally by the SenseManager. Do not release the instance.
+        @return The module instance.
+    */
+	__inline PXCObjectRecognitionModule* QueryObjectRecognition(void) { 
+		PXCBase *instance=QueryModule(PXCObjectRecognitionModule::CUID);
+		return instance?instance->QueryInstance<PXCObjectRecognitionModule>():0;
+    }
+
     /**
         @brief    Return the blob module instance. Between AcquireFrame/ReleaseFrame, the function returns
         NULL if the specified module hasn't completed processing the current frame of image data.
@@ -268,6 +284,18 @@ public:
     __inline PXCBlobModule* QueryBlob(void) { 
         PXCBase *instance=QueryModule(PXCBlobModule::CUID);
         return instance?instance->QueryInstance<PXCBlobModule>():0;
+    }
+
+
+	/**
+        @brief    Return the Person tracking module instance. Between AcquireFrame/ReleaseFrame, the function returns
+        NULL if the specified module hasn't completed processing the current frame of image data.
+        The instance is managed internally by the SenseManager. Do not release the instance.
+        @return The module instance.
+    */
+	__inline PXCPersonTrackingModule* QueryPersonTacking(void) {
+		PXCBase *instance = QueryModule(PXCPersonTrackingModule::CUID);
+		return instance ? instance->QueryInstance<PXCPersonTrackingModule>() : 0;
     }
 
 
@@ -430,9 +458,10 @@ public:
         @param[in] width            Optional width.
         @param[in] height           Optional height.
         @param[in] fps              Optional frame rate.
+		@param[in] option			Optional stream flags.
         @return PXC_STATUS_NO_ERROR        Successful execution.
     */
-    __inline pxcStatus EnableStream(PXCCapture::StreamType type, pxcI32 width=0, pxcI32 height=0, pxcF32 fps=0) {
+    __inline pxcStatus EnableStream(PXCCapture::StreamType type, pxcI32 width=0, pxcI32 height=0, pxcF32 fps=0, PXCCapture::Device::StreamOption options=PXCCapture::Device::STREAM_OPTION_ANY) {
         PXCVideoModule::DataDesc ddesc={};
         ddesc.deviceInfo.streams = type;
         PXCVideoModule::StreamDesc& sdesc=ddesc.streams[type];
@@ -440,6 +469,7 @@ public:
         sdesc.sizeMin.height=sdesc.sizeMax.height=height;
         sdesc.frameRate.min=fps;
         sdesc.frameRate.max=fps;
+		sdesc.options = options;
         return EnableStreams(&ddesc);
     }
 
@@ -460,19 +490,8 @@ public:
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
         mdesc.cuids[0]=PXCFaceModule::CUID;
-        if (name) wcscpy_s<sizeof(mdesc.friendlyName)/sizeof(pxcCHAR)>(mdesc.friendlyName, name);
+        if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
         return EnableModule(PXCFaceModule::CUID,&mdesc);
-    }
-
-    /**
-        @brief    Enable the emotion module in the pipeline.
-        @return PXC_STATUS_NO_ERROR        Successful execution.
-    */
-    __inline pxcStatus EnableEmotion(void) {
-        PXCSession::ImplDesc mdesc;
-        memset(&mdesc,0,sizeof(mdesc));
-        mdesc.cuids[0]=PXCEmotion::CUID;
-        return EnableModule(PXCEmotion::CUID,&mdesc);
     }
 
     /**
@@ -496,7 +515,7 @@ public:
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
         mdesc.cuids[0]=PXCHandModule::CUID;
-        if (name) wcscpy_s<sizeof(mdesc.friendlyName)/sizeof(pxcCHAR)>(mdesc.friendlyName, name);
+        if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
         return EnableModule(PXCHandModule::CUID,&mdesc);
     }
 
@@ -509,9 +528,24 @@ public:
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
         mdesc.cuids[0]=PXCBlobModule::CUID;
-        if (name) wcscpy_s<sizeof(mdesc.friendlyName)/sizeof(pxcCHAR)>(mdesc.friendlyName, name);
+        if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
         return EnableModule(PXCBlobModule::CUID,&mdesc);
     }
+
+
+	/**
+        @brief    Enable the Person tracking module in the pipeline.
+        @param[in] name        The optional module name.
+        @return PXC_STATUS_NO_ERROR        Successful execution.
+    */
+	__inline pxcStatus EnablePersonTracking(pxcCHAR *name = 0) {
+        PXCSession::ImplDesc mdesc;
+        memset(&mdesc,0,sizeof(mdesc));
+		mdesc.cuids[0] = PXCPersonTrackingModule::CUID;
+        if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
+		return EnableModule(PXCPersonTrackingModule::CUID, &mdesc);
+    }
+
 
     /**
         @brief    Enable the touchless controller module in the pipeline.
@@ -532,7 +566,7 @@ public:
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
         mdesc.cuids[0]=PXC3DSeg::CUID;
-        if (name) wcscpy_s<sizeof(mdesc.friendlyName)/sizeof(pxcCHAR)>(mdesc.friendlyName,name);
+        if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
         return EnableModule(PXC3DSeg::CUID,&mdesc);
     }
     
@@ -545,7 +579,7 @@ public:
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
         mdesc.cuids[0]=PXC3DScan::CUID;
-        if (name) wcscpy_s<sizeof(mdesc.friendlyName)/sizeof(pxcCHAR)>(mdesc.friendlyName,name);
+        if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
         return EnableModule(PXC3DScan::CUID,&mdesc);
     }
 
@@ -557,7 +591,7 @@ public:
         PXCSession::ImplDesc mdesc;
         memset(&mdesc, 0, sizeof(mdesc));
         mdesc.cuids[0] = PXCScenePerception::CUID;
-        if (name) wcscpy_s<sizeof(mdesc.friendlyName) / sizeof(pxcCHAR)>(mdesc.friendlyName, name);
+        if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
         return EnableModule(PXCScenePerception::CUID, &mdesc);
     }
 
@@ -570,6 +604,17 @@ public:
 		memset(&mdesc,0,sizeof(mdesc));
 		mdesc.cuids[0]=PXCEnhancedVideo::CUID;
 		return EnableModule(PXCEnhancedVideo::CUID,&mdesc);
+	}
+
+	/**
+		@brief	Enable the Object recognition module in the pipeline.
+		@return PXC_STATUS_NO_ERROR		Successful execution.
+	*/
+	__inline pxcStatus EnableObjectRecognition(void) {
+		PXCSession::ImplDesc mdesc;
+		memset(&mdesc,0,sizeof(mdesc));
+		mdesc.cuids[0]=PXCObjectRecognitionModule::CUID;
+		return EnableModule(PXCObjectRecognitionModule::CUID,&mdesc);
 	}
 	
     /**
@@ -587,6 +632,14 @@ public:
 		PauseModule(PXCScenePerception::CUID,pause); 
 	}
 
+		/**
+        @brief    Pause/Resume the execution of the Object Recognition module.
+        @param[in] pause        If true, pause the module. Otherwise, resume the module.
+    */
+	__inline void PauseObjectRecognition(pxcBool pause) { 
+		PauseModule(PXCObjectRecognitionModule::CUID,pause); 
+	}
+
 
     /**
         @brief    Pause/Resume the execution of the face module.
@@ -594,14 +647,6 @@ public:
     */
     __inline void PauseFace(pxcBool pause) { 
         PauseModule(PXCFaceModule::CUID,pause); 
-    }
-
-    /**
-        @brief    Pause/Resume the execution of the emotion module.
-        @param[in] pause        If true, pause the module. Otherwise, resume the module.
-    */
-    __inline void PauseEmotion(pxcBool pause) {
-        PauseModule(PXCEmotion::CUID,pause); 
     }
 
     /**
@@ -626,6 +671,15 @@ public:
     */
     __inline void PauseBlob(pxcBool pause) {
         PauseModule(PXCBlobModule::CUID,pause); 
+    }
+
+
+	/**
+        @brief    Pause/Resume the execution of the Person tracking module.
+        @param[in] pause        If true, pause the module. Otherwise, resume the module.
+    */
+	__inline void PausePersonTracking(pxcBool pause) {
+		PauseModule(PXCPersonTrackingModule::CUID, pause);
     }
 
     /**
