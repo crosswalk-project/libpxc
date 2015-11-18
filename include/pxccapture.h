@@ -118,7 +118,8 @@ public:
         DEVICE_MODEL_IVCAM      = 0x0020000E,    /* deprecated: the Intel(R) RealSense(TM) 3D Camera, model F200 */
 		DEVICE_MODEL_R200		= 0x0020000F,    /* the Intel(R) RealSense(TM) 3D Camera, model R200 */
 		DEVICE_MODEL_DS4		= 0x0020000F,    /* deprecated: the Intel(R) RealSense(TM) 3D Camera, model R200 */
-		DEVICE_MODEL_F250       = 0x00200010,    /* The Intel(R) RealSense(TM) 3D Camera, model F250 */
+		DEVICE_MODEL_SR300       = 0x00200010,    /* The Intel(R) RealSense(TM) 3D Camera, model SR300 */
+		DEVICE_MODEL_R200_ENHANCED = 0x0020001F,   /* The Intel(R) RealSense(TM) 3D Camera, model R200 and Platform Camera */
 	};
 
 	/** 
@@ -131,7 +132,8 @@ public:
         case DEVICE_MODEL_GENERIC: return L"Generic";
         case DEVICE_MODEL_F200: return L"F200";
         case DEVICE_MODEL_R200:	return L"R200";
-        case DEVICE_MODEL_F250:	return L"F250";
+		case DEVICE_MODEL_R200_ENHANCED:	return L"R200 Enhanced";
+		case DEVICE_MODEL_SR300:	return L"SR300";
         }
         return L"Unknown";
     }
@@ -375,6 +377,8 @@ public:
 			PROPERTY_DS_NEIGHBOR_THRESHOLD            = 0x20015, /* pxcF32        RW    Sets the threshold for how much at least one adjacent disparity score must differ from the minimum score to be judged a reliable depth measurement. */
 			PROPERTY_DS_LR_THRESHOLD                  = 0x20016, /* pxcF32        RW    Determines the current threshold for determining whether the left-right match agrees with the right-left match. */
 
+			
+			PROPERTY_SR300_COLOR_EXPOSURE_PRIORITY      = 0x30000, /* pxcF32        RW    Sets the Color Exposure Priority. */
 
             /* Customized properties */
             PROPERTY_CUSTOMIZED=0x04000000,                        /* CUSTOMIZED properties */
@@ -1555,6 +1559,42 @@ public:
 		*/
 		__inline pxcStatus SetDSLeftRightGain(pxcI32 value) {
 			return SetProperty(PROPERTY_DS_LEFTRIGHT_GAIN, (pxcF32)value);
+		}
+
+
+		
+
+		/**
+		@brief Query SR300 Color Exposure Priority
+		@param[in] value    Color Exposure Priority Value
+		@return PXC_STATUS_NO_ERROR             successful execution.
+		@return PXC_STATUS_ITEM_UNAVAILABLE     the device property is not supported.
+		*/
+		__inline pxcI32 QuerySR300ColorExposurePriority() {
+			pxcF32 value=PROPERTY_VALUE_INVALID;
+			QueryProperty(PROPERTY_SR300_COLOR_EXPOSURE_PRIORITY,&value);
+			return (pxcI32)value;
+		}
+
+		/**
+		@brief Get SR300 Color Exposure Priority property information.
+		@return  SR300Color Exposure Priority property information
+		*/
+		__inline PropertyInfo    QuerySR300ColorExposurePriorityInfo(void) {
+			PropertyInfo value={{PROPERTY_VALUE_INVALID,PROPERTY_VALUE_INVALID},0,PROPERTY_VALUE_INVALID};
+			QueryPropertyInfo(PROPERTY_SR300_COLOR_EXPOSURE_PRIORITY, &value);
+			return value;
+		}
+
+
+		/**
+		@brief Set SR300 Color Exposure Priority
+		@param[in] value    Color Exposure Priority Value
+		@return PXC_STATUS_NO_ERROR             successful execution.
+		@return PXC_STATUS_ITEM_UNAVAILABLE     the device property is not supported.
+		*/
+		__inline pxcStatus SetSR300ColorExposurePriority(pxcI32 value) {
+			return SetProperty(PROPERTY_SR300_COLOR_EXPOSURE_PRIORITY, (pxcF32)value);
 		}
     };
 };

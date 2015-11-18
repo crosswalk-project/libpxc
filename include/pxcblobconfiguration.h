@@ -47,6 +47,7 @@ public:
 	/**
 		@brief Apply the configuration changes to the blob module.
 		This method must be called in order for any configuration changes to apply.
+		@note the actual change will have an affect from the next tracked frame.
         @return PXC_STATUS_NO_ERROR - successful operation.
         @return PXC_STATUS_DATA_NOT_INITIALIZED - the configuration was not initialized.                        
 	*/
@@ -285,9 +286,9 @@ public:
 	*/
 	virtual pxcF32  PXCAPI QueryBlobSmoothing() = 0;
 
-    inline pxcStatus __declspec(deprecated("Deprecated. Use SetBlobSmoothing instead.")) SetSegmentationSmoothing(pxcF32 smoothingValue) { return SetBlobSmoothing(smoothingValue); }
-    inline pxcStatus __declspec(deprecated("Deprecated. Use SetBlobSmoothing instead.")) SetContourSmoothing(pxcF32 smoothingValue) { return SetBlobSmoothing(smoothingValue); }
-    inline pxcF32 __declspec(deprecated("Deprecated. Use QueryBlobSmoothing instead."))  QuerySegmentationSmoothing() { return QueryBlobSmoothing(); }
-    inline pxcF32 __declspec(deprecated("Deprecated. Use QueryBlobSmoothing instead."))  QueryContourSmoothing() { return QueryBlobSmoothing(); }    
+    inline pxcStatus PXC_DEPRECATED("Deprecated. Use SetBlobSmoothing instead.") SetSegmentationSmoothing(pxcF32 smoothingValue) { return SetBlobSmoothing(smoothingValue); }
+    inline pxcStatus PXC_DEPRECATED("Deprecated. Use SetBlobSmoothing instead.") SetContourSmoothing(pxcF32 smoothingValue) { return SetBlobSmoothing(smoothingValue); }
+    inline pxcF32 PXC_DEPRECATED("Deprecated. Use QueryBlobSmoothing instead.")  QuerySegmentationSmoothing() { return QueryBlobSmoothing(); }
+    inline pxcF32 PXC_DEPRECATED("Deprecated. Use QueryBlobSmoothing instead.")  QueryContourSmoothing() { return QueryBlobSmoothing(); }    
 };
  

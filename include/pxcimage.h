@@ -30,6 +30,7 @@ Defines the PXCImage interface, which manages image buffer access.
 #pragma once
 #include "pxcbase.h"
 #include "pxcaddref.h"
+#include "pxcmetadata.h"
 #pragma warning(push)
 #pragma warning(disable:4201) /* nameless structs/unions */
 
@@ -39,13 +40,14 @@ This class defines a standard interface for image buffer access.
 The interface extends PXCAddRef. Use QueryInstance<PXCAddRef>(), or the helper
 function AddRef() to access the PXCAddRef features.
 
-The interface extends PXCMetadata. Use QueryInstance<PXCMetadata>() to access 
+The interface extends PXCMetadata. Use QueryMetadata() to access 
 the PXCMetadata features.
 */
 class PXCImage:public PXCBase {
 public:
     PXC_CUID_OVERWRITE(0x24740F76);
     PXC_DEFINE_CONST(NUM_OF_PLANES, 4);
+	PXC_DEFINE_CONST(METADATA_DEVICE_ROTATION,0x3904a1fc);
 	PXC_DEFINE_CONST(METADATA_DEVICE_PROPERTIES,0x61516733);
 	PXC_DEFINE_CONST(METADATA_DEVICE_PROJECTION,0x3546785a);
 
@@ -261,6 +263,22 @@ public:
     __inline void AddRef(void) {
         QueryInstance<PXCAddRef>()->AddRef();
     }
+
+    /** 
+    @brief Query rotation data.
+    */
+	__inline Rotation QueryRotation(void) {
+		Rotation rotation = ROTATION_0_DEGREE;
+		QueryInstance<PXCMetadata>()->QueryBuffer(METADATA_DEVICE_ROTATION, (pxcBYTE*)&rotation, sizeof(rotation));
+		return rotation;
+    }
+
+	/**
+	@brief    A helper function to access PXCMetadata instance
+	*/
+	__inline PXCMetadata* QueryMetadata(void) {
+		return QueryInstance<PXCMetadata>();
+	}
 };
 
 /** 

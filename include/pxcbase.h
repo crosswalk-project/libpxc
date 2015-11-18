@@ -31,7 +31,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pxcdefs.h"
 #include "pxcstatus.h"
 
+#if defined(_WIN32) || defined(_WIN64)
 #define PXCAPI __stdcall
+#else
+#define PXCAPI
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////
 /**

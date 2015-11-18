@@ -119,21 +119,27 @@ public:
     */
     enum AlertType {
          ///  A hand is identified and its mask is available  
-         ALERT_HAND_DETECTED                 = 0x0001         
-        , ALERT_HAND_NOT_DETECTED            = 0x0002        ///  A previously detected hand is lost, either because it left the field of view or because it is occluded
-        , ALERT_HAND_TRACKED                 = 0x0004        ///  Full tracking information is available for a hand
-        , ALERT_HAND_NOT_TRACKED             = 0x0008        ///  No tracking information is available for a hand (none of the joints are tracked)
-        , ALERT_HAND_CALIBRATED              = 0x0010        ///  Hand measurements are ready and accurate 
-        , ALERT_HAND_NOT_CALIBRATED          = 0x0020        ///  Hand measurements are not yet finalized, and are not fully accurate
-        , ALERT_HAND_OUT_OF_BORDERS          = 0x0040        ///  Hand is outside of the tracking boundaries
-        , ALERT_HAND_INSIDE_BORDERS          = 0x0080        ///  Hand has moved back inside the tracking boundaries         
-        , ALERT_HAND_OUT_OF_LEFT_BORDER      = 0x0100        ///  The tracked object is touching the left border of the field of view
-        , ALERT_HAND_OUT_OF_RIGHT_BORDER     = 0x0200        ///  The tracked object is touching the right border of the field of view
-        , ALERT_HAND_OUT_OF_TOP_BORDER       = 0x0400        ///  The tracked object is touching the upper border of the field of view
-        , ALERT_HAND_OUT_OF_BOTTOM_BORDER    = 0x0800        ///  The tracked object is touching the lower border of the field of view
-        , ALERT_HAND_TOO_FAR                 = 0x1000        ///  The tracked object is too far
-        , ALERT_HAND_TOO_CLOSE               = 0x2000        ///  The tracked object is too close        
-        , ALERT_HAND_LOW_CONFIDENCE          = 0x4000        ///  The tracked object is low confidence        
+         ALERT_HAND_DETECTED                 = 0x000001         
+        , ALERT_HAND_NOT_DETECTED            = 0x000002        ///  A previously detected hand is lost, either because it left the field of view or because it is occluded
+        , ALERT_HAND_TRACKED                 = 0x000004        ///  Full tracking information is available for a hand
+        , ALERT_HAND_NOT_TRACKED             = 0x000008        ///  No tracking information is available for a hand (none of the joints are tracked)
+        , ALERT_HAND_CALIBRATED              = 0x000010        ///  Hand measurements are ready and accurate 
+        , ALERT_HAND_NOT_CALIBRATED          = 0x000020        ///  Hand measurements are not yet finalized, and are not fully accurate
+        , ALERT_HAND_OUT_OF_BORDERS          = 0x000040        ///  Hand is outside of the tracking boundaries
+        , ALERT_HAND_INSIDE_BORDERS          = 0x000080        ///  Hand has moved back inside the tracking boundaries         
+        , ALERT_HAND_OUT_OF_LEFT_BORDER      = 0x000100        ///  The tracked object is touching the left border of the field of view
+        , ALERT_HAND_OUT_OF_RIGHT_BORDER     = 0x000200        ///  The tracked object is touching the right border of the field of view
+        , ALERT_HAND_OUT_OF_TOP_BORDER       = 0x000400        ///  The tracked object is touching the upper border of the field of view
+        , ALERT_HAND_OUT_OF_BOTTOM_BORDER    = 0x000800        ///  The tracked object is touching the lower border of the field of view
+        , ALERT_HAND_TOO_FAR                 = 0x001000        ///  The tracked object is too far
+        , ALERT_HAND_TOO_CLOSE               = 0x002000        ///  The tracked object is too close        
+        , ALERT_HAND_LOW_CONFIDENCE          = 0x004000        ///  The tracked object is low confidence        
+		, ALERT_CURSOR_DETECTED              = 0x008000        ///  Cursor is detected
+		, ALERT_CURSOR_NOT_DETECTED          = 0x010000		   ///  A previously detected cursor is lost
+		, ALERT_CURSOR_INSIDE_BORDERS        = 0x020000        ///  Cursor is outside of the tracking boundaries
+		, ALERT_CURSOR_OUT_OF_BORDERS        = 0x040000        ///  Cursor has moved back inside the tracking boundaries   
+		, ALERT_CURSOR_TOO_CLOSE             = 0x080000        ///  Cursor is too far
+		, ALERT_CURSOR_TOO_FAR               = 0x100000        ///  Cursor is too close     
     };
     
 
@@ -158,11 +164,13 @@ public:
         Defines the possible tracking modes.
         TRACKING_MODE_FULL_HAND - enables full tracking of the hand skeleton, including all the joints' information.
         TRACKING_MODE_EXTREMITIES - tracks only the hand's mask and its extremity points.
+		TRACKING_MODE_CURSOR - enables tracking of cursor, cursor alerts and cursor gestures		
     */
-    enum TrackingModeType { 
-        /// Track the full skeleton    
-        TRACKING_MODE_FULL_HAND=0    
-        , TRACKING_MODE_EXTREMITIES    /// Track the hand extremities
+    enum TrackingModeType {   
+		/// Track the full skeleton (22 joints)
+        TRACKING_MODE_FULL_HAND		= 0x0001,   
+        TRACKING_MODE_EXTREMITIES	= 0x0002, 	/// Track the hand extremities
+		TRACKING_MODE_CURSOR		= 0x0004,	/// cursor tracking
     };
 
     
@@ -262,20 +270,23 @@ public:
         Defines the properties of a gesture.
         
         The gestures in the default gesture package (installed with the hand module by default) are:
-            "spreadfingers"  - hand open facing the camera.
-            "thumb_up" - hand closed with thumb pointing up.
-            "thumb_down"  - hand closed with thumb pointing down.
-            "two_fingers_pinch_open"  - hand open with thumb and index finger touching each other.
-            "v_sign" - hand closed with index finger and middle finger pointing up.
-            "fist" - all fingers folded into a fist. The fist can be in different orientations as long as the palm is in the general direction of the camera.
-            "full_pinch" - all fingers extended and touching the thumb. The pinched fingers can be anywhere between pointing directly to the screen or in profile. 
-            "tap" - a hand in a natural relaxed pose is moved forward as if pressing a button.
-            "wave" - an open hand facing the screen. The wave gesture's length can be any number of repetitions.
-            "click" - hand facing the camera either with open palm or closed move the index finger fast toward the palm center as if clicking on a mouse.
-            "swipe_down" - hold hand towards the camera and moves it down and then return it toward the starting position.
-            "swipe_up" - hold hand towards the camera and moves it up and then return it toward the starting position.
-            "swipe_right" - hold hand towards the camera and moves it right and then return it toward the starting position.
-            "swipe_left" - hold hand towards the camera and moves it left and then return it toward the starting position.
+            Gesture that are available for TRACKING_MODE_FULL_HAND:
+			  "spreadfingers"  - hand open facing the camera.
+              "thumb_up" - hand closed with thumb pointing up.
+              "thumb_down"  - hand closed with thumb pointing down.
+              "two_fingers_pinch_open"  - hand open with thumb and index finger touching each other.
+              "v_sign" - hand closed with index finger and middle finger pointing up.
+              "fist" - all fingers folded into a fist. The fist can be in different orientations as long as the palm is in the general direction of the camera.
+              "full_pinch" - all fingers extended and touching the thumb. The pinched fingers can be anywhere between pointing directly to the screen or in profile. 
+              "tap" - a hand in a natural relaxed pose is moved forward as if pressing a button.
+              "wave" - an open hand facing the screen. The wave gesture's length can be any number of repetitions.
+              "click" - hand facing the camera either with open palm or closed move the index finger fast toward the palm center as if clicking on a mouse.
+              "swipe_down" - hold hand towards the camera and moves it down and then return it toward the starting position.
+              "swipe_up" - hold hand towards the camera and moves it up and then return it toward the starting position.
+              "swipe_right" - hold hand towards the camera and moves it right and then return it toward the starting position.
+              "swipe_left" - hold hand towards the camera and moves it left and then return it toward the starting position.
+			Gesture that are available for TRACKING_MODE_CURSOR:
+				"cursor_click" - hand facing the camera with closed palm move the index finger fast toward the palm center as if clicking on a mouse or open palm move the index touching the thumb.
 
     */
     struct GestureData 
@@ -321,7 +332,34 @@ public:
     };
 
 
-    /* Interfaces */
+	/** 
+        @class ICursor
+        Contains hand cursor data
+    */
+	class ICursor
+    {
+    public:
+
+        /** 
+			@brief Get the geometric position of the cursor in 3D world coordinates, in meters.
+			@return the cursor point in world coordinates.
+		*/
+        virtual PXCPoint3DF32 PXCAPI QueryPointWorld() const = 0;    
+
+        /** 
+			@brief Get the geometric position of the cursor in 2D image coordinates, in pixels. (Note: the Z coordinate is the point's depth in millimeters.)
+			@return the cursor point in image coordinates.
+		*/
+        virtual PXCPoint3DF32 PXCAPI QueryPointImage() const = 0;    
+        
+        /** 
+			@brief Get the score of confidence that we have in the accuracy of the cursor point.
+			@return confidence.
+		*/
+        virtual pxcI32 PXCAPI QueryConfidence() const = 0;
+    };
+
+
 
     /** 
         @class IHand
@@ -528,6 +566,26 @@ public:
 		@see IContour       
 		*/
 		virtual pxcStatus PXCAPI QueryContour(const pxcI32 index, IContour*& contourData) const = 0;
+
+		/** 
+            @brief  Return true/false if cursor data exists. 
+            @see PXCHandConfiguration::SetTrackingMode
+        */
+        virtual pxcBool PXCAPI HasCursor()const= 0;
+
+		/**            
+            @brief Retrieve the cursor data of the tracked hand.      
+            @note This information is available only when the cursor mode is enabled.
+            @see PXCHandConfiguration::SetTrackingMode
+            
+            @param[out] cursor - the requested cursor data.
+            
+            @return PXC_STATUS_NO_ERROR - operation succeeded.
+            @return PXC_STATUS_DATA_UNAVAILABLE - cursor data is not available.   
+
+			@see ICursor
+        */        
+		virtual pxcStatus PXCAPI QueryCursor(ICursor*& cursor) const = 0; 
 
 
     };    // class IHand

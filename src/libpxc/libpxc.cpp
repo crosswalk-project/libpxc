@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011-2012, Intel Corporation
+Copyright (c) 2011-2015, Intel Corporation
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define RSSDK_REG_MAIN       TEXT("Core")
 #define RSSDK_REG_LOCAL      TEXT("LocalRuntime")
 
-#define LOAD_LIBRARY_FLAGS  0x00001100 // LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
+#define LOAD_LIBRARY_FLAGS  0x00001100 
 
 #ifdef _DEBUG
 #define SESSION_RELATIVE_PATH  (sizeof(void*) == 4 ? L"\\bin\\win32_debug\\libpxcsession.dll" : L"\\bin\\x64_debug\\libpxcsession.dll")
@@ -40,7 +40,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SESSION_RELATIVE_PATH  (sizeof(void*) == 4 ? L"\\bin\\win32\\libpxcsession.dll" : L"\\bin\\x64\\libpxcsession.dll")
 #endif
 
-//#define PRINT_INFO(PARAMS) wprintf_s PARAMS
 #define PRINT_INFO(PARAMS)
 
 static PXCSession *LoadSessionLibrary(pxcCHAR *filepath, int options) {

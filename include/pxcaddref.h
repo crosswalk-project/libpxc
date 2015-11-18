@@ -50,6 +50,9 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#ifndef _WIN32
+#include <atomic>
+#endif
 /**
 This is the base implementation of the PXCAddRef interface.
 */
@@ -64,13 +67,20 @@ public:
 
     virtual pxcI32 PXCAPI AddRef(void)
     {
-        return InterlockedIncrement((volatile long*)&m_refCount);
+#ifdef _WIN32
+        return _InterlockedIncrement((volatile long*)&m_refCount);
+#else
+        return ++m_refCount;
+#endif
     }
 
     virtual void   PXCAPI Release(void)
     {
-        if (!InterlockedDecrement((volatile long*)&m_refCount))
-            ::delete this;
+#ifdef _WIN32
+        if (!_InterlockedDecrement((volatile long*)&m_refCount)) ::delete this;
+#else
+        if (!--m_refCount) ::delete this;
+#endif
     }
 
     virtual void* PXCAPI QueryInstance(pxcUID cuid)
@@ -81,9 +91,11 @@ public:
     void operator delete(void* pthis) { ((PXCBase*)pthis)->Release(); }
 
 protected:
-
+#ifdef _WIN32
     __declspec(align(32)) pxcI32  m_refCount;
-
+#else
+    std::atomic<int>  m_refCount;
+#endif
 };
 
 #endif

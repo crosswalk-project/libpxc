@@ -36,13 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #pragma once
 
-//TODO
-//#if defined (WIN32) || defined(WIN64) || defined(WINAPI_FAMILY)
-//#include <wchar.h>
 typedef wchar_t pxcCHAR;
-//#else
-//typedef char pxcCHAR;
-//#endif
 
 /** A signed 16-bit integer */
 typedef short               pxcI16;
@@ -51,7 +45,7 @@ typedef int                 pxcUID;
 /** A signed 32-bit integer */
 typedef int                 pxcI32;
 /** An signed 64-bit integer */
-typedef __int64             pxcI64;
+typedef long long           pxcI64;
 /** An unsigned 16-bit integer */
 typedef unsigned short int  pxcU16;
 /** A byte (an unsigned 8-bit integer) */
@@ -129,3 +123,9 @@ struct PXCBox3DF32 {
 
 /** This macro defines a UID in the context of a class deriving from PXCBase. */
 #define PXC_DEFINE_UID(Y,X1,X2,X3,X4) enum {Y=PXC_UID(X1,X2,X3,X4)}
+
+#if defined(_WIN32) || defined(_WIN64)
+#define PXC_DEPRECATED(_MSG) __declspec(deprecated(_MSG))
+#else
+#define PXC_DEPRECATED(_MSG)
+#endif

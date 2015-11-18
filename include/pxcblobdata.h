@@ -178,9 +178,9 @@ public:
 	virtual pxcStatus PXCAPI QueryContour(const pxcI32 index, IContour*& contourData) const = 0;
 	
 
-	inline pxcStatus __declspec(deprecated("Deprecated. Use QueryContour instead.")) QueryContourPoints(const pxcI32 index, const pxcI32 maxSize, PXCPointI32* contour) { IContour* c; if(QueryContour(index,c)==pxcStatus::PXC_STATUS_NO_ERROR){ return c->QueryPoints(maxSize, contour);} else {return  PXC_STATUS_ITEM_UNAVAILABLE;}} 
-	inline pxcBool   __declspec(deprecated("Deprecated. Use QueryContour instead.")) IsContourOuter(const pxcI32 index) { IContour* c; if(QueryContour(index,c)==pxcStatus::PXC_STATUS_NO_ERROR){ return c->IsOuter();}else { return false; }};
-	inline pxcI32    __declspec(deprecated("Deprecated. Use QueryContour instead.")) QueryContourSize(const pxcI32 index) const 
+	inline pxcStatus PXC_DEPRECATED("Deprecated. Use QueryContour instead.") QueryContourPoints(const pxcI32 index, const pxcI32 maxSize, PXCPointI32* contour) { IContour* c; if(QueryContour(index,c)==pxcStatus::PXC_STATUS_NO_ERROR){ return c->QueryPoints(maxSize, contour);} else {return  PXC_STATUS_ITEM_UNAVAILABLE;}} 
+	inline pxcBool   PXC_DEPRECATED("Deprecated. Use QueryContour instead.") IsContourOuter(const pxcI32 index) { IContour* c; if(QueryContour(index,c)==pxcStatus::PXC_STATUS_NO_ERROR){ return c->IsOuter();}else { return false; }};
+	inline pxcI32    PXC_DEPRECATED("Deprecated. Use QueryContour instead.") QueryContourSize(const pxcI32 index) const 
 	{ 
 		IContour* c;
 		if(QueryContour(index,c)==pxcStatus::PXC_STATUS_NO_ERROR)
@@ -237,7 +237,7 @@ public:
 		@see SegmentationImageType
     */
 	virtual pxcStatus PXCAPI QueryBlob(const pxcI32 index,SegmentationImageType segmentationImageType,  AccessOrderType accessOrderType, IBlob*& blobData) = 0;
-	__inline pxcStatus __declspec(deprecated("Deprecated. Use QueryBlob instead.")) QueryBlobByAccessOrder(const pxcI32 index, AccessOrderType accessOrderType, IBlob*& blobData) {return QueryBlob(index,SegmentationImageType::SEGMENTATION_IMAGE_DEPTH, accessOrderType, blobData);  }
+	__inline pxcStatus PXC_DEPRECATED("Deprecated. Use QueryBlob instead.") QueryBlobByAccessOrder(const pxcI32 index, AccessOrderType accessOrderType, IBlob*& blobData) {return QueryBlob(index,SegmentationImageType::SEGMENTATION_IMAGE_DEPTH, accessOrderType, blobData);  }
 
 
 };

@@ -74,6 +74,8 @@ enum pxcStatus {
 	PXC_STATUS_COORDINATE_SYSTEM_CONFLICT = -802,	/** Mismatched coordinate system between modules */
 	PXC_STATUS_NOT_MATCHING_CALIBRATION = -803,    /** calibration values not matching*/
 
+	PXC_STATUS_ACCELERATION_UNAVAILABLE = -901,		/** Acceleration unsupported or unavailable*/
+
     /* warnings */
     PXC_STATUS_TIME_GAP=                 101,   /** time gap in time stamps */
     PXC_STATUS_PARAM_INPLACE=            102,   /** the same parameters already defined */
