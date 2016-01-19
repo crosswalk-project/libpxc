@@ -53,7 +53,7 @@ public:
 	{
 		pxcBool isEnabled;
 		pxcI32 maxTrackedFaces;
-		SmoothingLevelType smoothingLevel;		
+		SmoothingLevelType smoothingLevel; //Not implemented - this value will be ignored
 		pxcI32 reserved[10];		
 	};
 
@@ -70,7 +70,7 @@ public:
 	{
 		pxcBool isEnabled;
 		pxcI32 maxTrackedFaces;
-		SmoothingLevelType smoothingLevel;
+		SmoothingLevelType smoothingLevel; //Not implemented - this value will be ignored
 		pxcI32 reserved[10];
 	};
 
@@ -138,6 +138,7 @@ public:
 	class RecognitionConfiguration
 	{
 	public:
+		//REGISTRATION_MODE_CONTINUOUS is not implemented - this value will be ignored
 		enum RecognitionRegistrationMode
 		{
 			REGISTRATION_MODE_CONTINUOUS,	//registers users automatically
@@ -155,6 +156,7 @@ public:
 		};
 		RecognitionStorageDesc storageDesc;
 
+		//accuracyThreshold and registrationMode are ignored - these features are not implemented
 		struct RecognitionProperties
 		{
 			pxcBool isEnabled;
@@ -172,58 +174,26 @@ public:
 		{
 			properties.isEnabled = false;
 		}
+		//Ignored
 		__inline void SetAccuracyThreshold(pxcI32 threshold)
 		{
 			properties.accuracyThreshold = threshold;
 		}
+		//Not implemented
 		__inline pxcI32 GetAccuracyThreshold()
 		{
 			return properties.accuracyThreshold;
 		}
+		//Ignored
 		__inline void SetRegistrationMode(RecognitionRegistrationMode mode)
 		{
 			properties.registrationMode = mode;
 		}
+		//Not implemented
 		__inline RecognitionRegistrationMode GetRegistrationMode()
 		{
 			return properties.registrationMode;
 		}
-		/** 
-			@brief Sets the active Recognition database.
-			@param[in] storageName - The name of the database to be loaded by the Recognition module.
-			@param[in] storage - A pointer to the Recognition database, or NULL for an existing database.
-			@return PXC_STATUS_HANDLE_INVALID - if the module wasn't initialized properly.
-			PXC_STATUS_DATA_UNAVAILABLE - if the registration failed.
-			PXC_STATUS_NO_ERROR - if registration was successful.
-		*/
-		virtual pxcStatus PXCAPI UseStorage(pxcCHAR* storageName) = 0;
-
-		/** 
-			@brief Retrieves the Recognition storage descriptor for the active storage.
-			@param[in] outStorage - The storage descriptor into which the active storage information will be copied.
-		*/
-		virtual pxcStatus PXCAPI QueryActiveStorage(RecognitionStorageDesc* outStorage) = 0;
-
-		/** 
-			@brief Create a new Recognition database.
-			@param[in] storageName The name of the new database.
-			@return Pointer to the new database.
-		*/
-		virtual pxcStatus PXCAPI CreateStorage(pxcCHAR* storageName, RecognitionStorageDesc* storageDesc) = 0;
-
-		/** 
-			@brief Sets a storage descriptor to an existing Recognition storage.
-			@param[in] storageName - The name of the storage to set the descriptor for.
-			@param[in] storageDesc - Holds the new descriptor for the selected storage.
-			@return TBD
-		*/
-		virtual pxcStatus PXCAPI SetStorageDesc(pxcCHAR* storageName, RecognitionStorageDesc* storageDesc) = 0;
-
-		/** 
-			@brief Deletes an existing Recognition storage.
-			@param[in] storageName The name of the storage to be deleted.
-		*/
-		virtual pxcStatus PXCAPI DeleteStorage(pxcCHAR* storageName) = 0;
 
 		/** 
 			@brief Sets an existing database as the Recognition database used by the Face Recognition module.

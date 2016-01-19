@@ -36,24 +36,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #pragma once
 
+#include <stdint.h>
+
 typedef wchar_t pxcCHAR;
 
 /** A signed 16-bit integer */
-typedef short               pxcI16;
+typedef int16_t             pxcI16;
 /** This type is used as a unique identifier */
-typedef int                 pxcUID;
+typedef int32_t             pxcUID;
 /** A signed 32-bit integer */
-typedef int                 pxcI32;
+typedef int32_t             pxcI32;
 /** An signed 64-bit integer */
-typedef long long           pxcI64;
+typedef int64_t             pxcI64;
 /** An unsigned 16-bit integer */
-typedef unsigned short int  pxcU16;
+typedef uint16_t            pxcU16;
 /** A byte (an unsigned 8-bit integer) */
-typedef unsigned char       pxcBYTE;
+typedef uint8_t             pxcBYTE;
 /** A common type for enumeration values */
-typedef int                 pxcEnum;
+typedef int32_t             pxcEnum;
 /** A boolean value, zero indicates false */
-typedef int                 pxcBool;
+typedef int32_t             pxcBool;
 /** A single-precision (32-bit) floating point type */
 typedef float               pxcF32;
 /** A double-precision (64-bit) floating point type */

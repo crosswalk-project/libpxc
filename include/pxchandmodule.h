@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2015, Intel Corporation
+Copyright (c) 2013-2016, Intel Corporation
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -34,6 +34,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class PXCHandConfiguration;
 class PXCHandData;
 
+
+
 /**
     @Class PXCHandModule 
     The main interface to the hand module's classes.\n
@@ -45,7 +47,8 @@ public:
 
     PXC_CUID_OVERWRITE(PXC_UID('H','A','N','N'));
 
-    /** 
+
+	/** 
     @brief Create a new instance of the hand module's active configuration.
     Multiple configuration instances can be created in order to define different configurations for different stages of the application.
     You can switch between the configurations by calling the ApplyChanges method of the required configuration instance.
@@ -61,4 +64,8 @@ public:
     @see PXCHandData
     */
     virtual PXCHandData* PXCAPI CreateOutput() = 0;
+
+
+	
+
 };

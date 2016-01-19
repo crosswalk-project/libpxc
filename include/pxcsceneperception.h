@@ -231,10 +231,10 @@ class PXCScenePerception : public PXCBase
 		/**
 			@brief: SetVoxelResolution sets volume resolution for the scene 
 			perception. The VoxelResolution is locked when 
-			PXCSenseManager::Init(void) or 
-			SetCaptureProfile(PXCVideoModule::DataDesc *) is called.
-		    Afterwards value for VoxelResolution remains same throughout the 
-			runtime of scene perception module.
+			PXCSenseManager.Init() is called.
+			Afterwards value for VoxelResolution remains same throughout the 
+			lifetime of PXCSenseManager. The default value of voxel 
+			resolution is LOW_RESOLUTION.
 		   
 		    @param[in] voxelResolution: Resolution of the three dimensional 
 			reconstruction. 
@@ -249,8 +249,7 @@ class PXCScenePerception : public PXCBase
 		   
 		    @returns: PXC_STATUS_NO_ERROR if it succeeds, returns 
 			PXC_STATUS_ITEM_UNAVAILABLE if called after making call to 
-			PXCSenseManager::Init() or 
-			SetCaptureProfile(PXCVideoModule::DataDesc *).
+			PXCSenseManager::Init().
 		*/
 		virtual pxcStatus PXCAPI SetVoxelResolution(VoxelResolution /*voxelResolution*/) = 0;
 		
@@ -363,8 +362,8 @@ class PXCScenePerception : public PXCBase
 			explicitly call Release() on PXCImage after copying the data.
 		    or before making subsequent call to QueryVolumePreview(...).
 		   
-		    @param[in] pose: Array of 12 pxcF32 that stores initial camera pose
-		    user wishes to set in row-major order. Camera pose is specified in a 
+		    @param[in] pose: Array of 12 pxcF32 that stores camera pose
+		    in row-major order. Camera pose is specified in a 
 		    3 by 4 matrix [R | T] = [Rotation Matrix | Translation Vector]
 		    where R = [ r11 r12 r13 ]
 			 		  [ r21 r22 r23 ] 
@@ -483,13 +482,13 @@ class PXCScenePerception : public PXCBase
 			parallel with ProcessImageAsync. 
 
 			@param[in] blockMeshingData: Instance of pre-allocated 
-			PXCBlockMeshingData. Refer 
+			PXCBlockMeshingData. Refer to
 			PXCScenePerception::CreatePXCBlockMeshingData(...) for how to allocate 
 			PXCBlockMeshingData.
 		
 			@param[in] fillHoles: Argument to indicate whether to fill holes in
 			mesh blocks. If set, it will fill missing details in each mesh block 
-			that are visible from scene perception's camera current pose and 
+			that is visible from scene perception's camera current pose and 
 			completely surrounded by closed surface(holes) by smooth linear 
 			interpolation of adjacent mesh data.
 
@@ -547,7 +546,7 @@ class PXCScenePerception : public PXCBase
 		}
 		
 		/**
-			@brief: Allow users to save mesh in an ASCII obj file in 
+			@brief: Allows users to save mesh in an ASCII obj file in 
 			MeshResolution::HIGH_RESOLUTION_MESH.
 	
 			@param[in] pFile: the path of the file to use for saving the mesh.
@@ -566,16 +565,13 @@ class PXCScenePerception : public PXCBase
 
 		/** 
 			@brief: Allows user to check whether the input stream is suitable 
-			for starting scene perception or not. We recommend using this 
-			function when scene perception module is paused. User can pause 
-			scene perception module using SenseManager::PauseScenePerception().
-		    This function should only be used as initializer to help user to determine 
-		    when to start or reset scene perception. 
+			for starting, resetting/restarting or tracking scene perception. 
 			
 			@param[in] PXCCapture::Sample: Input stream sample required by 
 			scene perception module.
 
-			@returns: Returns positive values between 0.0 and 1.0 to indicates
+			@returns: Returns positive values between 0.0 and 1.0 to indicate how good is scene for 
+					  starting, tracking or resetting scene perception.
 		              1.0 -> represents ideal scene for starting scene perception.
 					  0.0 -> represents unsuitable scene for starting scene perception.
 
@@ -584,7 +580,7 @@ class PXCScenePerception : public PXCBase
 					 -2.0 -> represents a scene without enough depth pixels 
 							 (Too far or too close to the target scene or 
 							  outside the range of depth camera)
-					  Also, value 0.0 is returned on when an invalid argument is passed or 
+					  Also, value 0.0 is returned when an invalid argument is passed or 
 					  if the function is called before calling PXCSenseManager::Init().
 		*/
 		virtual pxcF32 PXCAPI CheckSceneQuality(PXCCapture::Sample *sample) = 0;
@@ -843,9 +839,9 @@ class PXCScenePerception : public PXCBase
 		virtual pxcStatus PXCAPI SetCameraPose(const pxcF32 pose[12]) = 0;
 
 		/**
-			@brief: Allows user to get length of voxel side in meters.
+			@brief: Allows user to get length of side of voxel cube in meters.
 
-			@returns: Returns length of voxel side in meters.
+			@returns: Returns length of side of voxel cube in meters.
 		*/
 		virtual pxcF32 PXCAPI QueryVoxelSize() = 0;
 
@@ -941,17 +937,17 @@ class PXCScenePerception : public PXCBase
 		}SaveMeshInfo;
 
 		/**
-			@brief: Allow users to save different configuration of mesh in an 
+			@brief: Allows users to save different configuration of mesh in an 
 			ASCII obj file.
 	
-			@param[in] pFile: the path of the file to use for saving the mesh.
+			@param[in] filename: the path of the file to use for saving the mesh.
 		
 			@param[in] saveMeshInfo: Argument to indicate mesh configuration 
 			you wish to save.
 
 				-fillMeshHoles: Flag indicates whether to fill holes in saved mesh. 
 
-				saveMeshColor: Flag indicates whether you with to save mesh color.
+				saveMeshColor: Flag indicates whether to save mesh with color.
 
 				meshResolution: Indicates resolution for mesh to be saved.
 
@@ -980,4 +976,58 @@ class PXCScenePerception : public PXCBase
 			returned on failure.
 		*/
 		virtual pxcStatus PXCAPI EnableGravitySensorSupport(const pxcBool enable) = 0;
+
+		/**
+			@brief: Allows user to get status(enabled/disabled) of gravity sensor support 
+			for scene perception.
+
+			@returns: On success PXC_STATUS_NO_ ERROR, Otherwise error code is 
+			returned on failure.
+		*/
+		virtual pxcBool PXCAPI IsGravitySensorSupportEnabled() = 0;
+
+		/**
+			@brief: Allows user to get status(enabled/disabled) of inertial sensor support
+			for scene perception.
+
+			@returns: On success PXC_STATUS_NO_ ERROR, Otherwise error code is 
+			returned on failure.
+		*/
+		virtual pxcBool PXCAPI IsInertialSensorSupportEnabled() = 0;
+
+		/**
+			@brief: Allows user to access volume details like 2D projection image of reconstructed 
+			volume by ray-casting, surface volume normals and surface volume faces from a given camera pose
+
+			@param[in] pose: Array of 12 pxcF32 that stores camera pose
+			in row-major order. Camera pose is specified in a 
+			3 by 4 matrix [R | T] = [Rotation Matrix | Translation Vector]
+			where R = [ r11 r12 r13 ]
+					  [ r21 r22 r23 ] 
+					  [ r31 r32 r33 ]
+				  T = [ tx  ty  tz  ]
+			Pose Array Layout = [r11 r12 r13 tx r21 r22 r23 ty r31 r32 r33 tz]
+			Translation vector is in meters.
+
+			@param[out] volumeImageData: Optional pre-allocated pxcBYTE array of size in bytes:
+			4 X ScenePerceptionIntrinsics.imageSize.width X ScenePerceptionIntrinsics.imageSize.height X (pxcBYTE's size)
+			where user wishes to store the projection data of the volume. ScenePerceptionIntrinsics is obtained using 
+			GetInternalCameraIntrinsics(...). It contains 4 channels per pixel in RGBA order.
+
+			@param[out] vertices: Optional pre-allocated array of pxcF32 to store volume
+			vertices. Each vertex is represented by 3 components x, y and z in order. Therefor 
+			the array size in bytes should be: (pxcF32's byte size) X  
+			ScenePerceptionIntrinsics.imageSize.width X ScenePerceptionIntrinsics.imageSize.height.
+			Where ScenePerceptionIntrinsics is obtained using GetInternalCameraIntrinsics(...). 
+
+			@param[out] normals: Optional pre-allocated array of pxcF32 to store 
+			volume normals. Each normal is represented by 3 components x, y and z in order. 
+			Therefor the array size in bytes should be: (pxcF32's byte size) X  
+			ScenePerceptionIntrinsics.imageSize.width X ScenePerceptionIntrinsics.imageSize.height.
+			Where ScenePerceptionIntrinsics is obtained using GetInternalCameraIntrinsics(...). 
+
+			@returns: On success PXC_STATUS_NO_ ERROR, Otherwise error code is 
+			returned on failure.
+		*/
+		virtual pxcStatus PXCAPI GetVolumePreview(const pxcF32 pose[12], pxcBYTE *volumeImageData, pxcF32* vertices, pxcF32* normals) = 0;
 };

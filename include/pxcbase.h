@@ -49,7 +49,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class PXCBase {
 public:
     enum { CUID=0 };
-    enum { WORKING_PROFILE=0xffffffff };
+    enum { WORKING_PROFILE=-1 };
 
     /**
         @brief The function checks if the object instance supports a specific interface.

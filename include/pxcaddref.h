@@ -65,6 +65,8 @@ public:
         m_refCount = 1;
     }
 
+	virtual ~PXCAddRefImpl(void) {}
+
     virtual pxcI32 PXCAPI AddRef(void)
     {
 #ifdef _WIN32

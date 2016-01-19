@@ -26,7 +26,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <windows.h>
 #include <tchar.h>
-#include "pxcsession.h"
+
+// In order to avoid linking to STD runtime for libpxc.lib we are not using types defined in PXC API
+//#include "pxcsession.h"
 #include "pxcversion.h"
 
 #define RSSDK_REG_MAIN       TEXT("Core")
@@ -42,20 +44,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define PRINT_INFO(PARAMS)
 
-static PXCSession *LoadSessionLibrary(pxcCHAR *filepath, int options) {
+#define PXCAPI __stdcall
+
+class PXCSession;
+
+extern "C" PXCSession* PXCAPI PXCSession_Create(void);
+
+static PXCSession *LoadSessionLibrary(wchar_t *filepath, int options) {
 	PXCSession *instance = 0;
-    pxcStatus sts = PXC_STATUS_FEATURE_UNSUPPORTED;
+	int sts = -1; // PXC_STATUS_FEATURE_UNSUPPORTED;
     HMODULE module = LoadLibrary(filepath);
     if (module) {
         PRINT_INFO((L"The SDK INFO: Loading session library %s\n", filepath));
 
-        typedef pxcStatus (PXCAPI *FUNC_PXCSession_CreateExt)(pxcI32 version_major, pxcI32 version_minor, pxcI32 version_build, pxcI32 reserved, pxcEnum options, pxcI32 reserved2, PXCSession **instance);
+        typedef int (PXCAPI *FUNC_PXCSession_CreateExt)(int version_major, int version_minor, int version_build, int reserved, int options, int reserved2, PXCSession **instance);
         FUNC_PXCSession_CreateExt pPXCSession_CreateExt = (FUNC_PXCSession_CreateExt)GetProcAddress(module, "PXCSession_CreateExt");
         if (pPXCSession_CreateExt) {
             sts = (*pPXCSession_CreateExt)(PXC_VERSION_MAJOR, PXC_VERSION_MINOR, PXC_VERSION_BUILD, 0, options, 0, &instance);
         }
     }
-    if (sts >= PXC_STATUS_NO_ERROR)
+    if (sts >= 0 /*PXC_STATUS_NO_ERROR*/)
     {
         PRINT_INFO((L"The SDK INFO: Loaded session library: %s\n", filepath));
     } else
@@ -77,20 +85,20 @@ PXCSession* PXCAPI PXCSession_Create(void) {
         err_code = RegOpenKeyEx(HKEY_LOCAL_MACHINE, (!i) ? RSSDK_REG_DEV TEXT("\\Dispatch") : RSSDK_REG_DEV32 TEXT("\\Dispatch"), 0, KEY_READ, &key);
         if (err_code != ERROR_SUCCESS) continue;
 
-        pxcCHAR local_path[MAX_PATH] = L"";
+        wchar_t local_path[MAX_PATH] = L"";
         DWORD size = sizeof(local_path);
         err_code = RegGetValue(key, 0, RSSDK_REG_LOCAL, RRF_RT_REG_SZ, &type, local_path, &size);
         RegCloseKey(key);
         if (err_code != ERROR_SUCCESS || !local_path[0]) continue;
 
-        pxcCHAR filepath[MAX_PATH] = L"";
+        wchar_t filepath[MAX_PATH] = L"";
         if (local_path[0] == '.') // relative path
         {
             // get module folder
             HMODULE handle = 0;
             GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)LoadSessionLibrary, &handle);
             GetModuleFileName(handle,filepath,MAX_PATH);
-            pxcCHAR *pSlash=wcsrchr(filepath,L'\\');
+            wchar_t *pSlash=wcsrchr(filepath,L'\\');
             if (pSlash) pSlash[1]=0;
             PRINT_INFO((L"The SDK INFO: Application folder: %s\n", filepath));
             wcscat_s<MAX_PATH>(filepath,local_path);
@@ -104,9 +112,9 @@ PXCSession* PXCAPI PXCSession_Create(void) {
         if (session) return session;
 
         // try __FILE__ at compilation time
-        pxcCHAR filename[MAX_PATH];
+        wchar_t filename[MAX_PATH];
         MultiByteToWideChar(CP_UTF8, 0, __FILE__, -1, filename, sizeof(filename));
-        pxcCHAR *pSlash=wcsrchr(filename,L'\\');
+        wchar_t *pSlash=wcsrchr(filename,L'\\');
         if (pSlash) *pSlash=0;
         wcscat_s(filename, MAX_PATH, L"\\..\\..");
         wcscat_s(filename, MAX_PATH, SESSION_RELATIVE_PATH);
@@ -115,7 +123,7 @@ PXCSession* PXCAPI PXCSession_Create(void) {
     }
 
     // standard registry key set by SDK installer
-    pxcCHAR dll_path[MAX_PATH] = L"";
+    wchar_t dll_path[MAX_PATH] = L"";
     err_code = RegOpenKeyEx(HKEY_LOCAL_MACHINE, RSSDK_REG_DISPATCH, 0, KEY_READ, &key);
     if (err_code == ERROR_SUCCESS) {
         DWORD size = sizeof(dll_path);
