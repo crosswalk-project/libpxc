@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2015, Intel Corporation
+Copyright (c) 2013-2016, Intel Corporation
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -133,13 +133,7 @@ public:
         , ALERT_HAND_OUT_OF_BOTTOM_BORDER    = 0x000800        ///  The tracked object is touching the lower border of the field of view
         , ALERT_HAND_TOO_FAR                 = 0x001000        ///  The tracked object is too far
         , ALERT_HAND_TOO_CLOSE               = 0x002000        ///  The tracked object is too close        
-        , ALERT_HAND_LOW_CONFIDENCE          = 0x004000        ///  The tracked object is low confidence        
-		, ALERT_CURSOR_DETECTED              = 0x008000        ///  Cursor is detected
-		, ALERT_CURSOR_NOT_DETECTED          = 0x010000		   ///  A previously detected cursor is lost
-		, ALERT_CURSOR_INSIDE_BORDERS        = 0x020000        ///  Cursor is outside of the tracking boundaries
-		, ALERT_CURSOR_OUT_OF_BORDERS        = 0x040000        ///  Cursor has moved back inside the tracking boundaries   
-		, ALERT_CURSOR_TOO_CLOSE             = 0x080000        ///  Cursor is too far
-		, ALERT_CURSOR_TOO_FAR               = 0x100000        ///  Cursor is too close     
+        , ALERT_HAND_LOW_CONFIDENCE          = 0x004000        ///  The tracked object is low confidence        		
     };
     
 
@@ -168,9 +162,8 @@ public:
     */
     enum TrackingModeType {   
 		/// Track the full skeleton (22 joints)
-        TRACKING_MODE_FULL_HAND		= 0x0001,   
-        TRACKING_MODE_EXTREMITIES	= 0x0002, 	/// Track the hand extremities
-		TRACKING_MODE_CURSOR		= 0x0004,	/// cursor tracking
+        TRACKING_MODE_FULL_HAND		= 0x0001   
+        , TRACKING_MODE_EXTREMITIES	= 0x0002 	/// Track the hand extremities		
     };
 
     
@@ -285,9 +278,7 @@ public:
               "swipe_up" - hold hand towards the camera and moves it up and then return it toward the starting position.
               "swipe_right" - hold hand towards the camera and moves it right and then return it toward the starting position.
               "swipe_left" - hold hand towards the camera and moves it left and then return it toward the starting position.
-			Gesture that are available for TRACKING_MODE_CURSOR:
-				"cursor_click" - hand facing the camera with closed palm move the index finger fast toward the palm center as if clicking on a mouse or open palm move the index touching the thumb.
-
+			
     */
     struct GestureData 
     {
@@ -332,32 +323,7 @@ public:
     };
 
 
-	/** 
-        @class ICursor
-        Contains hand cursor data
-    */
-	class ICursor
-    {
-    public:
-
-        /** 
-			@brief Get the geometric position of the cursor in 3D world coordinates, in meters.
-			@return the cursor point in world coordinates.
-		*/
-        virtual PXCPoint3DF32 PXCAPI QueryPointWorld() const = 0;    
-
-        /** 
-			@brief Get the geometric position of the cursor in 2D image coordinates, in pixels. (Note: the Z coordinate is the point's depth in millimeters.)
-			@return the cursor point in image coordinates.
-		*/
-        virtual PXCPoint3DF32 PXCAPI QueryPointImage() const = 0;    
-        
-        /** 
-			@brief Get the score of confidence that we have in the accuracy of the cursor point.
-			@return confidence.
-		*/
-        virtual pxcI32 PXCAPI QueryConfidence() const = 0;
-    };
+	
 
 
 
@@ -566,26 +532,6 @@ public:
 		@see IContour       
 		*/
 		virtual pxcStatus PXCAPI QueryContour(const pxcI32 index, IContour*& contourData) const = 0;
-
-		/** 
-            @brief  Return true/false if cursor data exists. 
-            @see PXCHandConfiguration::SetTrackingMode
-        */
-        virtual pxcBool PXCAPI HasCursor()const= 0;
-
-		/**            
-            @brief Retrieve the cursor data of the tracked hand.      
-            @note This information is available only when the cursor mode is enabled.
-            @see PXCHandConfiguration::SetTrackingMode
-            
-            @param[out] cursor - the requested cursor data.
-            
-            @return PXC_STATUS_NO_ERROR - operation succeeded.
-            @return PXC_STATUS_DATA_UNAVAILABLE - cursor data is not available.   
-
-			@see ICursor
-        */        
-		virtual pxcStatus PXCAPI QueryCursor(ICursor*& cursor) const = 0; 
 
 
     };    // class IHand

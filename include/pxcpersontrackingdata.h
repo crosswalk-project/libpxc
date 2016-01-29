@@ -55,9 +55,11 @@ public:
 	*/
 	enum AccessOrderType {
 		ACCESS_ORDER_BY_ID=0			/// By unique ID of the person
+#ifdef PT_MW_DEV
 		, ACCESS_ORDER_BY_TIME 			/// From oldest to newest person in the scene           
 		, ACCESS_ORDER_NEAR_TO_FAR		/// From nearest to farthest person in scene
 		, ACCESS_ORDER_LEFT_TO_RIGHT	/// Ordered from left to right in scene
+#endif
 	};	
 
 	/**
@@ -195,6 +197,33 @@ public:
 		virtual void PXCAPI UnregisterUserByID(pxcUID userID) = 0;
 	};
 
+#ifdef PT_MW_DEV
+	class PersonGestures
+	{
+	public:
+		struct PointingInfo
+		{
+			PXCPointF32		originColor;
+			PXCPoint3DF32	originWorld;
+			PXCPointF32		directionColor;
+			PXCPoint3DF32	directionWorld;
+			int             confidence;
+		};
+
+		/**
+		@brief Retrieves information about a person pointing their hand, in the form of a point of origin and a vector for the direction.
+		@return the structure that describes the pointing gesture.
+		*/
+		virtual PointingInfo QueryPointingInfo() = 0;
+		
+		/**
+		@brief Indicates whether a pointing gesture is occurring.
+		@return true if the person is pointing, false otherwise.
+		*/
+		virtual bool IsPointing() = 0;
+	};
+#endif
+
 	class PersonJoints
 	{
 	public:
@@ -330,6 +359,11 @@ public:
 		*/
 		virtual BoundingBox2D PXCAPI QueryHeadBoundingBox() const = 0;
 
+		/**
+		@brief Retrieve the 3D image mask of the tracked person.
+		*/
+		virtual PXCImage* PXCAPI QueryBlobMask() = 0;
+
 #ifdef PT_MW_DEV
 		/**
 			@brief Return the location and dimensions of the tracked person, represented by a 3D bounding box.
@@ -390,8 +424,12 @@ public:
 			@brief Returns the Person Joints interface
 		*/
 		virtual PXCPersonTrackingData::PersonJoints* PXCAPI QuerySkeletonJoints() = 0;
-
 #ifdef PT_MW_DEV
+		/**
+			@brief Returns the Person Gestures interface
+		*/
+		virtual PXCPersonTrackingData::PersonGestures* PXCAPI QueryGestures() = 0;
+		
 		/**
 			@brief Returns the Person Pose interface
 		*/

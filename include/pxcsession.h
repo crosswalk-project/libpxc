@@ -61,9 +61,10 @@ public:
 	*/
 	PXC_DEFINE_UID(METADATA_FEEDBACK_SAMPLE_INFO, 'P', 'H', 'S', 'M');
 	PXC_DEFINE_UID(METADATA_FEEDBACK_FRAMEWORK_INFO, 'P', 'H', 'F', 'M');
+
     /** 
         @structure ImplVersion
-        Describe the video streams requested by a module implementation.
+        Describes the SDK runtime version.
     */
     struct ImplVersion {
         pxcI16  major;    /* The major version number */

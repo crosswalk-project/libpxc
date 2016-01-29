@@ -143,7 +143,6 @@ public:
 			properties.maxTrackedPersons = maxTrackedPersons;
 		}
 	};
-
 	class RecognitionConfiguration
 	{
 	public:
@@ -182,6 +181,7 @@ public:
 	 	@brief Returns the Person Tracking Pose Configuration interface
 	 */
 	virtual PoseConfiguration* PXCAPI QueryPose() = 0;
+
 	/**
 		@brief Returns the Person Tracking Recognition Configuration interface
 	*/
@@ -201,6 +201,36 @@ public:
 	virtual void PXCAPI SetTrackedAngles(TrackingAngles angles) = 0;
 	
 #ifdef PT_MW_DEV
+	class GesturesConfiguration
+	{
+	public:
+		struct GesturesProperties
+		{
+			pxcBool isEnabled;
+			pxcI32 maxTrackedPersons;
+			pxcI32 reserved[10];
+		};
+		GesturesProperties properties;
+		__inline void Enable()
+		{
+			properties.isEnabled = true;
+		}
+		__inline void Disable()
+		{
+			properties.isEnabled = false;
+		}
+		__inline void SetMaxTrackedPersons(pxcI32 maxTrackedPersons)
+		{
+			properties.maxTrackedPersons = maxTrackedPersons;
+		}
+	};
+
+	/**
+	@brief Returns the Person Tracking Gestures Configuration interface
+	*/
+	virtual GesturesConfiguration* PXCAPI QueryGestures() = 0;
+
+
 	/* Event Handlers */
 	
 	/**	

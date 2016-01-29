@@ -123,6 +123,15 @@ public:
 	};
 
 	/** 
+        @enum ConnectionType
+        Describes the Connection type of the deivce
+    */
+    enum ConnectionType {
+        CONNECTION_TYPE_UNKNOWN    =  0 ,				/* Any connection type */
+        CONNECTION_TYPE_USB_INTEGRATED ,			  /* USB Integrated Camera */
+        CONNECTION_TYPE_USB_PERIPHERAL				/* USB Peripheral Camera */
+	};
+	/** 
 		@brief Get the model string representation
 		@param[in] model	 The camera model
 		@return The corresponding string representation.
@@ -165,7 +174,8 @@ public:
         pxcI32              didx;           /* device index */
         pxcI32              duid;           /* device unique identifier within the SDK session */
         PXCImage::Rotation  rotation;       /* how the camera device is physically mounted */
-        pxcI32              reserved[12];
+		ConnectionType		connectionType; /* how the camera is connected to the platform */
+        pxcI32              reserved[11];
 
         /** 
             @brief Get the available stream numbers.
@@ -262,6 +272,21 @@ public:
         */
         __inline Sample(void):color(0),depth(0),ir(0),left(0),right(0),reserved() {
         }
+
+		/**
+		@brief Assess internal pointers and returns true if at least one of them have data
+		*/
+		__inline bool IsEmpty(void) {
+			if (color)	return false;
+			if (depth)	return false;
+			if (ir)		return false;
+			if (left)	return false;
+			if (right)	return false;
+			for (int i = 0; i<sizeof(reserved) / sizeof(reserved[0]); i++)
+				if (reserved[i]) return false;
+			return true;
+		}
+
     };
 
     /**
@@ -552,6 +577,10 @@ public:
             sp->Release();
             return sts;
         }
+
+		__inline pxcStatus PXCAPI ReadAnyStream(Sample *sample) {
+			return ReadStreamsAsync((StreamType)0x80000000, sample, nullptr);
+		}
 
 	protected:
 
@@ -1197,6 +1226,8 @@ public:
             @return PXC_STATUS_ITEM_UNAVAILABLE     the device property is not supported.
         */
         __inline pxcStatus SetMirrorMode(MirrorMode value) {
+			if (value != MIRROR_MODE_DISABLED && value != MIRROR_MODE_HORIZONTAL)
+				return PXC_STATUS_DEVICE_FAILED;
             return SetProperty(PROPERTY_DEVICE_MIRROR,(pxcF32)value);
         }
 

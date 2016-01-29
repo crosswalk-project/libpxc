@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pxcfacemodule.h"
 #include "pxctracker.h"
 #include "pxchandmodule.h"
+#include "pxchandcursormodule.h"
 #include "pxcblobmodule.h"
 #include "pxcpersontrackingmodule.h"
 #include "pxctouchlesscontroller.h"
@@ -161,6 +162,16 @@ public:
         return QuerySample(PXCHandModule::CUID);
     }
 
+
+	/**
+        @brief    Return the captured sample for the hand cursor module.
+        The captured sample is managed internally by the SenseManager. Do not release the sample.
+        @return The sample instance, or NULL if the captured sample is not available.
+    */
+    __inline PXCCapture::Sample* QueryHandCursorSample(void) {
+        return QuerySample(PXCHandCursorModule::CUID);
+    }
+
 	   /**
         @brief    Return the captured sample for the object recognition module.
         The captured sample is managed internally by the SenseManager. Do not release the sample.
@@ -262,6 +273,17 @@ public:
     __inline PXCHandModule* QueryHand(void) { 
         PXCBase *instance=QueryModule(PXCHandModule::CUID);
         return instance?instance->QueryInstance<PXCHandModule>():0;
+    }
+
+	 /**
+        @brief    Return the hand module instance. Between AcquireFrame/ReleaseFrame, the function returns
+        NULL if the specified module hasn't completed processing the current frame of image data.
+        The instance is managed internally by the SenseManager. Do not release the instance.
+        @return The module instance.
+    */
+    __inline PXCHandCursorModule* QueryHandCursor(void) { 
+        PXCBase *instance=QueryModule(PXCHandCursorModule::CUID);
+        return instance?instance->QueryInstance<PXCHandCursorModule>():0;
     }
 
 	/**
@@ -519,6 +541,20 @@ public:
         return EnableModule(PXCHandModule::CUID,&mdesc);
     }
 
+
+	 /**
+        @brief    Enable the hand cursor module in the pipeline.
+        @param[in] name        The optional module name.
+        @return PXC_STATUS_NO_ERROR        Successful execution.
+    */
+    __inline pxcStatus EnableHandCursor(pxcCHAR *name=0) {
+        PXCSession::ImplDesc mdesc;
+        memset(&mdesc,0,sizeof(mdesc));
+        mdesc.cuids[0]=PXCHandCursorModule::CUID;
+        if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
+        return EnableModule(PXCHandCursorModule::CUID,&mdesc);
+    }
+
     /**
         @brief    Enable the blob module in the pipeline.
         @param[in] name        The optional module name.
@@ -663,6 +699,14 @@ public:
     */
     __inline void PauseHand(pxcBool pause) {
         PauseModule(PXCHandModule::CUID,pause); 
+    }
+
+	 /**
+        @brief    Pause/Resume the execution of the hand cursor module.
+        @param[in] pause        If true, pause the module. Otherwise, resume the module.
+    */
+    __inline void PauseHandCursor(pxcBool pause) {
+        PauseModule(PXCHandCursorModule::CUID,pause); 
     }
 
     /**

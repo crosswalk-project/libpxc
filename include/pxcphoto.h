@@ -24,7 +24,9 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-/** @file pxcphoto.h
+
+/** 
+	@file pxcphoto.h
     Defines the PXCPhoto interface, which defines the photo container.
   */
 #pragma once
@@ -57,13 +59,32 @@ public:
 	@return true if file is XDM and false otherwise.
 	*/ 
     virtual pxcBool PXCAPI IsXDM(pxcCHAR *filename)=0;
-	
+
 	/** 
-        @brief Import the photo content from the XDM File Format v2.0.
-        @param[in]   filename           The file name.
-        @return PXC_STATUS_NO_ERROR     Successful execution.
-    */ 
-    virtual pxcStatus PXCAPI LoadXDM(pxcCHAR *filename)=0;
+		SubSample: Subsampling rate to load high resolution images faster 
+		NO_SUBSAMPLING = 0
+		SUBSAMPLE_2 = 2
+		SUBSAMPLE_4 = 4
+		SUBSAMPLE_8 = 8
+	*/
+	enum Subsample
+	{
+		NO_SUBSAMPLING,
+		SUBSAMPLE_2,
+		SUBSAMPLE_4,
+		SUBSAMPLE_8
+	};
+
+	/** 
+	@brief Import the photo content from the XDM File Format v2.0.
+	@param[in]   filename           The file name.
+	@return PXC_STATUS_NO_ERROR     Successful execution.
+	*/ 
+	virtual pxcStatus PXCAPI LoadXDM(pxcCHAR *filename, Subsample subsample) = 0;
+	__inline pxcStatus LoadXDM(pxcCHAR *filename) { 
+		return LoadXDM(filename, Subsample::NO_SUBSAMPLING);
+	}
+
 
     /** 
         @brief Export the photo content to the XDM File Format v2.0.
@@ -81,29 +102,29 @@ public:
 
 	/**
 	@brief Get the container color image of the photo. The container image is usually the processed color image.
-	also known as reference Image
+			   Also known as reference Image
 	@return The PXCImage instance.
 	*/
 	virtual PXCImage* PXCAPI QueryContainerImage(void) = 0;
 
 	/**
-	@brief copy the camera[0] color image to the container image of the photo.
+		@brief Copy the camera[0] color image to the container image of the photo.
 	*/
-	virtual void PXCAPI ResetContainerImage(void) = 0;
+	virtual pxcStatus PXCAPI ResetContainerImage(void) = 0;
 
 	/**
 	@brief Get the color image in camera[camIdx] of the photo. The unedited image is usually the unprocessed color image in camera[0].
 	@return The PXCImage instance.
 	*/
-	virtual PXCImage* PXCAPI QueryColorImage(pxcI32 camIdx) = 0;
+	virtual PXCImage* PXCAPI QueryImage(pxcI32 camIdx) = 0;
 		
 	/**
 	@brief Get the unedited color image of the photo. The unedited image is usually the unprocessed color image.
 	@return The PXCImage instance.
 	*/
-	//virtual PXCImage* PXCAPI QueryColorImage(void) = 0; //deprecate
-	__inline PXCImage* QueryColorImage(void) { 
-		return QueryColorImage(0);
+
+	__inline PXCImage* QueryImage(void) { 
+		return QueryImage(0);
 	}
 
 	/**
@@ -111,21 +132,21 @@ public:
 	this is tagged by R200-rawdepth in VendorInfo->Model
 	@return The PXCImage instance.
 	*/
-	virtual PXCImage* PXCAPI QueryRawDepthImage(void) = 0;
+	virtual PXCImage* PXCAPI QueryRawDepth(void) = 0;
 
 	/**
 	@brief Get the depth map in camera[camIdx] of the photo. The depth map in camera[0] is the holefilled depth.
 	@return The PXCImage instance.
 	*/
-	virtual PXCImage* PXCAPI QueryDepthImage(pxcI32 camIdx) = 0;
+	virtual PXCImage* PXCAPI QueryDepth(pxcI32 camIdx) = 0;
 		
 	/**
-	@brief Get the depth image of the photo. This would be the processed depth if it undergoes processing.
+		@brief Get the depth map of the photo. This would be the processed depth if it undergoes processing.
 	@return The PXCImage instance.
 	*/
-	//virtual PXCImage* PXCAPI QueryDepthImage(void) = 0; //depricate
-	__inline PXCImage* QueryDepthImage(void) { 
-		return QueryDepthImage(0);
+
+	__inline PXCImage* QueryDepth(void) { 
+		return QueryDepth(0);
 	}
 
 	/**

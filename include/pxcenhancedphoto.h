@@ -25,140 +25,169 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /** @file PXCEnhancedPhoto.h
-    Defines the PXCEnhancedPhoto interface, which programs may use to process snapshots of captured frames
-	to measure distance and refocus the image
- */
+	Defines the PXCEnhancedPhoto interface, which programs may use to process snapshots of captured frames
+*/
 #pragma once
 #include "pxcphoto.h"
 #include "pxcsession.h"
 
 /**
-This class defines a standard interface for enhanced photography algorithms.
+	This class defines a standard interface for Enhanced Photography Algorithms.
 */
-class PXCEnhancedPhoto:public PXCBase {
+class PXCEnhancedPhoto: public PXCBase {
+
 public:
 
 	PXC_CUID_OVERWRITE(PXC_UID('E','P','I','N'));
 
-	/** This represents a point in 3D world space in millimeter (mm) units. */
-	struct WorldPoint {
-		PXCPoint3DF32 coord; /**< Coordinates in mm. */
-		pxcF32 confidence; /**< Confidence for this point. The confidence ranges from 0.0 (no confidence) to 1.0 (high confidence). This should be set to NaN if confidence is not available. */ 
-		pxcF32 precision; /**< Precision for this point. Precision is given in mm and represents the percision of the depth value at this point in 3D space. This should be set to NaN if precision is not available. */
-		pxcF32 reserved[6];
-	};
-
-	/** This represents the distance between two world points in millimeters (mm). */
-	struct MeasureData {
-		pxcF32 distance; /**< The distance measured in mm. */
-		pxcF32 confidence; /**< Confidence for this point. The confidence ranges from 0.0 (no confidence) to 1.0 (high confidence). This should be set to NaN if confidence is not available. */ 
-		pxcF32 precision; /**< Precision for this point. Precision is given in mm and represents the percision of the depth value at this point in 3D space. This should be set to NaN if precision is not available. */
-		WorldPoint startPoint; /**< The first of the two points from which the distance is measured. */
-		WorldPoint endPoint; /**< The second of the two points from which the distance is measured. */
-		pxcF32 reserved[6];
-	};
-
-	/** 
-	MeasureDistance: measure the distance between 2 points in mm
-	photo: is the photo instance
-	startPoint, endPoint: are the start pont and end point of the distance that need to be measured.
-	Note: depth data must be availible and accurate at the start and end point selected. 
-	*/
-	virtual pxcStatus PXCAPI MeasureDistance(const PXCPhoto *photo, PXCPointI32 startPoint, PXCPointI32 endPoint, MeasureData *outData) = 0;
-	
 	/**
-	DepthRefocus: refocus the image at input focusPoint by using depth data refocus
-	photo: is the color and depth photo instance
-	focusPoint: is the selected point foir refocussing.
-	aperture: Range of the blur area = focal length/f-number. approximate range [7, 160]  =  [f/22, f/1.1] 
-	Note: The application must release the returned refocussed image
+		This class defines a standard interface for Enhanced Photography Depth Mask Generator Algorithms.
 	*/
-	virtual PXCPhoto* PXCAPI DepthRefocus(const PXCPhoto *photo, PXCPointI32 focusPoint, pxcF32 aperture) = 0;
+	class DepthMask: public PXCBase {
+	public:
 
-	/**
-	DepthRefocus: refocus the image at input focusPoint by using depth data refocus
-	photo: is the color and depth photo
-	focusPoint: is the selected point foir refocussing.
-	Note: The application must release the returned refocussed image
-	*/
-	__inline PXCPhoto* DepthRefocus(const PXCPhoto *photo, PXCPointI32 focusPoint) { 
-		return DepthRefocus(photo, focusPoint, 50.0);
-	}
+		PXC_CUID_OVERWRITE(PXC_UID('E','P','D','M'));
 
-	struct MaskParams{
-		pxcF32 frontObjectDepth;
-		pxcF32 backOjectDepth;
-		pxcF32 nearFallOffDepth;
-		pxcF32 farFallOffDepth;
-		pxcF32 reserved[4];
+		_inline static DepthMask* CreateInstance(PXCSession* session){
+			DepthMask *me=0;
+			session->CreateImpl<DepthMask>(&me);
+			return me;
+		}
 
-		MaskParams() {
-			frontObjectDepth = -1;
-			backOjectDepth = -1;
-			nearFallOffDepth = -1;
-			farFallOffDepth = -1;
+		struct MaskParams{
+			pxcF32 frontObjectDepth;
+			pxcF32 backOjectDepth;
+			pxcF32 nearFallOffDepth;
+			pxcF32 farFallOffDepth;
+			pxcF32 reserved[4];
+
+			MaskParams() {
+				frontObjectDepth = -1;
+				backOjectDepth = -1;
+				nearFallOffDepth = -1;
+				farFallOffDepth = -1;
+			};
 		};
+
+		/**
+			Init: the function initializes the Depth Mask function with the photo that needs processing. 
+			photo: 2D+depth input image.
+			returns PXCStatus.
+		*/
+		virtual pxcStatus PXCAPI Init(const PXCPhoto *photo) = 0;
+
+		/** 
+			ComputeFromThreshold: calculates a mask from the threshold computed 
+			depthThreshold: depth threshold. 
+			pxcF32 frontObjectDepth: foreground depth
+			pxcF32 backOjectDepth: background depth
+			pxcF32 nearFallOffDepth: ??
+			pxcF32 farFallOffDepth ::?
+			Returns a mask in the form of PXCImage for blending with the current photo frame.
+
+			Notes:
+			For every pixel, if the mask is between the range of [POIdepth - frontObjectDepth, POIdepth + backObjectDepth], mask[p] -1.
+			For every pixel p with depth in the range [POI - frontObjectDepth - nearFalloffDepth, POI - frontObjectDepth], mask[p] equals the "smoothstep" function value.
+			For every pixel p with depth in the range [POI  + backObjectDepth , POI + backOjectDepth + farFallOffDepth], mask[p] equals the "smoothstep" function value.
+			For every pixel p with other depth value, mask[p] = 1.
+		*/
+		virtual PXCImage* PXCAPI ComputeFromThreshold(pxcF32 depthThreshold, MaskParams *maskParams) = 0;
+		__inline PXCImage* ComputeFromThreshold(pxcF32 depthThreshold){
+
+			MaskParams maskParams;
+			return ComputeFromThreshold(depthThreshold, &maskParams);
+		};
+
+		/** 
+			ComputeFromCoordinate: convenience function that creates a mask directly from a depth coordinate.
+			coord: input (x,y) coordinates on the depth map.  
+			Returns a mask in the form of PXCImage for blending with the current photo frame.
+			Note: This function simply calls ComputeFromThreshold underneath.
+		*/
+		virtual PXCImage* PXCAPI ComputeFromCoordinate(PXCPointI32 coord, MaskParams *maskParams) = 0;
+		__inline PXCImage* ComputeFromCoordinate(PXCPointI32 coord){
+			MaskParams maskParams;
+			return ComputeFromCoordinate(coord, &maskParams);
+		};
+
 	};
 
-	/** 
-	ComputeMaskFromThreshold: calculates a mask from the threshold computed 
-	photo: input color and depth photo, only used the depth map.
-	depthThreshold: depth threshold. 
-	pxcF32 frontObjectDepth: foreground depth
-	pxcF32 backOjectDepth: background depth
-	pxcF32 nearFallOffDepth: ??
-	pxcF32 farFallOffDepth ::?
-	Returns a mask in the form of PXCImage for blending with the current photo frame.
+	/**
+		This class defines a standard interface for Enhanced Photography Motion Effect Algorithms.
+	*/
+	class MotionEffect: public PXCBase {
+	public:
+		
+		PXC_CUID_OVERWRITE(PXC_UID('E','P','M','E'));
+
+		_inline static MotionEffect* CreateInstance(PXCSession* session){
+			MotionEffect *me=0;
+			session->CreateImpl<MotionEffect>(&me);
+			return me;
+		}
 	
-	notes:
-	For every pixel, if the mask is between the range of [POIdepth - frontObjectDepth, POIdepth + backObjectDepth], mask[p] -1.
-	For every pixel p with depth in the range [POI - frontObjectDepth - nearFalloffDepth, POI - frontObjectDepth], mask[p] equals the "smoothstep" function value.
-	For every pixel p with depth in the range [POI  + backObjectDepth , POI + backOjectDepth + farFallOffDepth], mask[p] equals the "smoothstep" function value.
-	For every pixel p with other depth value, mask[p] = 1.
-	*/
-	virtual PXCImage* PXCAPI ComputeMaskFromThreshold(const PXCPhoto *photo, pxcF32 depthThreshold, MaskParams *maskParams) = 0;
-	__inline PXCImage* ComputeMaskFromThreshold(const PXCPhoto *photo, pxcF32 depthThreshold){
-		MaskParams maskParams;
-		return ComputeMaskFromThreshold(photo, depthThreshold, &maskParams);
-	};
+		/**
+			Init: the function initializes the 6DoF parallax function with the photo that needs processing. 
+			photo: 2D+depth input image.
+			returns PXCStatus.
+		*/
+		virtual pxcStatus PXCAPI Init(const PXCPhoto *photo) = 0;
 
-	/** 
-	ComputeMaskFromCoordinate: convenience function that creates a mask directly from a depth coordinate.
-	photo: input color and depth photo, only used the depth map.
-	coord: input (x,y) coordinates on the depth map.  
-	Returns a mask in the form of PXCImage for blending with the current photo frame.
-	Note: this function simply calls ComputeMaskFromThreshold underneath.
-	*/
-	virtual PXCImage* PXCAPI ComputeMaskFromCoordinate(const PXCPhoto *photo, PXCPointI32 coord, MaskParams *maskParams) = 0;
-	__inline PXCImage* ComputeMaskFromCoordinate(const PXCPhoto *photo, PXCPointI32 coord){
-		MaskParams maskParams;
-		return ComputeMaskFromCoordinate(photo, coord, &maskParams);
+		/**
+			Apply: the function applies a 6DoF parallax effect which is the difference in the apparent position of an object
+			when it is viewed from two different positions or viewpoints. 
+
+			motion[3]: is the right, up, and forward motion when (+ve), and Left, down and backward motion when (-ve)
+			motion[0]: + right   / - left 
+			motion[1]: + up      / - down
+			motion[2]: + forward / - backward
+			rotation[3]: is the Pitch, Yaw, Roll rotations in degrees in the Range: 0-360. 
+			rotaion[0]: pitch 
+			rotaion[1]: yaw
+			rotaion[2]: roll
+			zoomFactor: + zoom in / - zoom out
+			PXCImage: the returned parallaxed image.
+		*/
+		virtual PXCImage* PXCAPI Apply(pxcF32 motion[3], pxcF32 rotation[3], pxcF32 zoomFactor) = 0;
+
 	};
 	
 	/**
-	InitMotionEffect: the function initializes the 6DoF parallax function with the photo that needs processing. 
-	photo: 2D+depth input image.
-	returns PXCStatus.
+		This class defines a standard interface for Enhanced Photography Depth Refocus Algorithms.
 	*/
-	virtual pxcStatus PXCAPI InitMotionEffect(const PXCPhoto *photo) = 0;
+	class DepthRefocus: public PXCBase{
+	public:
+
+		PXC_CUID_OVERWRITE(PXC_UID('E','P','D','R'));
+
+		_inline static DepthRefocus* CreateInstance(PXCSession* session){
+			DepthRefocus *dr=0;
+			session->CreateImpl<DepthRefocus>(&dr);
+			return dr;
+		}
+
+		/**
+			Init: the function initializes the Depth Refocus function with the photo that needs processing. 
+			photo: 2D+depth input image.
+			returns PXCStatus.
+		*/
+		virtual pxcStatus PXCAPI Init(const PXCPhoto *photo) = 0;
+		
+		/**
+			Apply: Refocus the image at input focusPoint by using depth data refocus
+			focusPoint: is the selected point foir refocussing.
+			aperture: Range of the blur area = focal length/f-number. approximate range [7, 160]  =  [f/22, f/1.1] 
+			Note: The application must release the returned refocussed image
+		*/
+		virtual PXCPhoto* PXCAPI Apply(PXCPointI32 focusPoint, pxcF32 aperture) = 0;
+			__inline PXCPhoto* Apply(PXCPointI32 focusPoint) { 
+				return Apply(focusPoint, 50.0); }
+
+	};
 
 	/**
-	ApplyMotionEffect: the function applies a 6DoF parallax effect which is the difference in the apparent position of an object
-	when it is viewed from two different positions or viewpoints. 
-
-	motion[3]: is the right, up, and forward motion when (+ve), and Left, down and backward motion when (-ve)
-	motion[0]: + right   / - left 
-	motion[1]: + up      / - down
-	motion[2]: + forward / - backward
-	rotation[3]: is the Pitch, Yaw, Roll rotations in degrees in the Range: 0-360. 
-	rotaion[0]: pitch 
-	rotaion[1]: yaw
-	rotaion[2]: roll
-	zoomFactor: + zoom in / - zoom out
-	PXCImage: the returned parallaxed image.
+		This class defines a standard interface for Enhanced Photography Utility Algorithms.
 	*/
-	virtual PXCImage* PXCAPI ApplyMotionEffect(pxcF32 motion[3], pxcF32 rotation[3], pxcF32 zoomFactor) = 0;
-
 	class PhotoUtils:public PXCBase {
 	public:
 
@@ -181,11 +210,11 @@ public:
 		};
 		
 		/**
-		EnhanceDepth: enhance the depth image quality by filling holes and denoising
-		outputs the enhanced depth image
-		photo: input color, depth photo, and calibration data
-		depthQuality: Depth fill Quality: HIGH or LOW for post or realtime processing respectively
-		Note: The application must release the returned enhanced depth image
+			EnhanceDepth: enhance the depth image quality by filling holes and denoising
+			outputs the enhanced depth image
+			photo: input color, depth photo, and calibration data
+			depthQuality: Depth fill Quality: HIGH or LOW for post or realtime processing respectively
+			Note: The application must release the returned enhanced depth image
 		*/
 		virtual PXCPhoto* PXCAPI EnhanceDepth(const PXCPhoto *photo, DepthFillQuality depthQuality)= 0;
 
@@ -217,6 +246,18 @@ public:
 		Note: Returns a nullptr if function fails
 		*/
 		virtual PXCPhoto* PXCAPI CommonFOV(const PXCPhoto *photo) = 0;
+
+		/**
+		PreviewCommonFOV: Matches the Field of View (FOV) of color and depth in depth photo. Useful for live stream.
+		Use the returned roi to crop the photo
+
+		photo: input image color+depth
+		outRect: Output. Returns roi in color image that matches to FOV of depth image that is suitable for all photos in the live stream.
+
+		 @return pxcStatus : PXC_STATUS_NO_ERRROR for successfu operation; PXC_STATUS_DATA_UNAVAILABLE otherwise
+		*/
+		virtual pxcStatus PXCAPI PreviewCommonFOV(const PXCPhoto *photo, PXCRectI32 *outRect) = 0;
+
 
 		/** 
 		Crop: The primary image, the camera[0] RGB and depth images are cropped 
@@ -267,7 +308,7 @@ public:
 	};
 
 	/**
-	This class defines a standard interface for enhanced photography segmentation algorithms.
+		This class defines a standard interface for Enhanced Photography Segmentation Algorithms.
 	*/
 	class Segmentation:public PXCBase {
 	public:
@@ -337,7 +378,10 @@ public:
 		}
 	};
 
-	class Paster:public PXCBase {
+	/**
+		This class defines a standard interface for Enhanced Photography Paster Algorithms.
+	*/
+	class Paster: public PXCBase {
 	public:
 
 		PXC_CUID_OVERWRITE(PXC_UID('E','P','P','P'));
@@ -476,4 +520,74 @@ public:
 
 	};
 	
+	/**
+	EXPERIMENTAL: This class defines a standard interface for Enhanced Photography Measurement Algorithms.
+	*/
+	class Measurement: public PXCBase {
+	public:
+
+		PXC_CUID_OVERWRITE(PXC_UID('E','P','M','D'));
+
+		_inline static Measurement* CreateInstance(PXCSession* session){
+			Measurement *me=0;
+			session->CreateImpl<Measurement>(&me);
+			return me;
+		}
+
+		/**	DistanceType: indicator whether the Two points measured lie on a the same planar surface */
+		enum DistanceType {
+			UNKNOWN = 0,
+			COPLANAR,
+			NONCOPLANAR, 
+		};
+		
+		/** This represents a point in 3D world space in millimeter (mm) units. */
+		struct WorldPoint {
+			PXCPoint3DF32 coord; /**< Coordinates in mm. */
+			pxcF32 confidence;   /**< Confidence for this point. The confidence ranges from 0.0 (no confidence) to 1.0 (high confidence). This should be set to NaN if confidence is not available. */ 
+			pxcF32 precision;    /**< Precision for this point. Precision is given in mm and represents the percision of the depth value at this point in 3D space. This should be set to NaN if precision is not available. */
+			pxcF32 reserved[6];
+		};
+
+		/** This represents the distance between two world points in millimeters (mm). */
+		struct MeasureData {
+			pxcF32 distance;       /**< The distance measured in mm. */
+			pxcF32 confidence;     /**< Confidence for this point. The confidence ranges from 0.0 (no confidence) to 1.0 (high confidence). This should be set to NaN if confidence is not available. */ 
+			pxcF32 precision;      /**< Precision for this point. Precision is given in mm and represents the percision of the depth value at this point in 3D space. This should be set to NaN if precision is not available. */
+			WorldPoint startPoint; /**< The first of the two points from which the distance is measured. */
+			WorldPoint endPoint;   /**< The second of the two points from which the distance is measured. */
+			DistanceType distType; /**< Provides indication whether both points were detected lie on a planar surface*/
+			pxcF32 reserved[6];
+		};
+
+		/** 
+		MeasureDistance: measure the distance between 2 points in mm
+		photo: is the photo instance
+		startPoint, endPoint: are the start pont and end point of the distance that need to be measured.
+		Note: depth data must be availible and accurate at the start and end point selected. 
+		*/
+		virtual pxcStatus PXCAPI MeasureDistance(const PXCPhoto *photo, PXCPointI32 startPoint, PXCPointI32 endPoint, MeasureData *outData) = 0;
+	
+		/** 
+		MeasureUADistance: (Experimental) measure the distance between 2 points in mm by using a experimental algortihm for a User Assisted (UA) measure.
+		photo: is the photo instance
+		startPoint, endPoint: are the user selected start point and end point of the distance that needs to be measured.
+		returns the MeasureData that has the highest confidence value.  
+		Note: depth data must be available and accurate at the start and end point selected. 
+		*/
+		virtual pxcStatus PXCAPI MeasureUADistance(const PXCPhoto *photo, PXCPointI32 startPoint, PXCPointI32 endPoint, MeasureData *outData) = 0;
+	
+		/** 
+		QueryUADataSize: (Experimental) returns the size of the MeasureData possibilites. The number of possibilities varries according 
+		to the selected points, if they lie on a common plane or independent planes.
+		*/
+		virtual pxcI32 PXCAPI QueryUADataSize() = 0;
+
+		/** 
+		QueryUAData: (Experimental) returns an array of the MeasureData possibilites. the size of the array is equal to the value returned
+		by the QueryUADataSize(). the array needs to be allocated and deallocated by the user.
+		*/
+		virtual pxcStatus PXCAPI QueryUAData(MeasureData *outDataArr) = 0;
+	
+	};
 };

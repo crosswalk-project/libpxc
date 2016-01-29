@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015-2016, Intel Corporation
+Copyright (c) 2013-2016, Intel Corporation
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -24,42 +24,44 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+/** @file PXCHandCursorModule.h
+    Defines the PXCHandCursorModule interface, which gives access the hand cursor module's configuration and output data.
+ */
+#pragma once
+#include "pxcbase.h"
 
-/** 
-@file pxcobjectrecognitionmodule.h
-@Defines the PXCObjectRecognitionModule interface, which programs may use to process snapshots of captured frames
-@to recognize pre-trained objects.
-*/
 
-#include "pxcobjectrecognitiondata.h"
-#include "pxcobjectrecognitionconfiguration.h"
+class PXCCursorConfiguration;
+class PXCCursorData;
+
 
 /**
-@Class PXCObjectRecognitionModule 
-The main interface to the ObjectRecognition module's classes.
-Use this interface to access the ObjectRecognition module's configuration and output data.
+    @Class PXCHandCursorModule 
+    The main interface to the hand cursor module's classes.\n
+    Use this interface to access the hand cursor module's configuration and output data.
 */
-class PXCObjectRecognitionModule :public PXCBase
+class PXCHandCursorModule : public PXCBase 
 {
 public:
-    PXC_CUID_OVERWRITE(PXC_UID('O', 'B', 'J', 'M'));
-      
-    /** 
-    @brief Create a new instance of the ObjectRecognition module's current output data.
-    Multiple instances of the output can be created in order to store previous tracking states. 
-    @return a PXCObjectRecognitionData instance.
-    @see PXCObjectRecognitionData 
-    */
-    virtual PXCObjectRecognitionData* PXCAPI CreateOutput() const =0; 
-    
-    /** 
-    @brief Create a new instance of the ObjectRecognition module's active configuration.
-    Multiple configuration instances can be created in order to define different configurations for different stages of the application.
-    The configurations can be switched by calling the ApplyChanges method of the required configuration instance.
-    @return a PXCObjectRecognitionConfiguration instance.
-    @see PXCObjectRecognitionConfiguaration
-    */
-    virtual PXCObjectRecognitionConfiguration* PXCAPI CreateActiveConfiguration() const =0;
 
-    
+    PXC_CUID_OVERWRITE(PXC_UID('H','C','M','N'));
+
+	/** 
+    @brief Create a new instance of the hand cursor module's active configuration.
+    Multiple configuration instances can be created in order to define different configurations for different stages of the application.
+    You can switch between the configurations by calling the ApplyChanges method of the required configuration instance.
+    @return A pointer to the configuration instance.
+    @see PXCCursorConfiguration
+    */
+	virtual PXCCursorConfiguration* PXCAPI CreateActiveConfiguration() = 0;
+
+	/** 
+    @brief Create a new instance of the hand cursor module's current output data.
+    Multiple instances of the output can be created in order to store previous tracking states. 
+    @return A pointer to the output data instance.
+    @see PXCCursorData
+    */
+	virtual PXCCursorData* PXCAPI CreateOutput() = 0;
+	
+
 };
