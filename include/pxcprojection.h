@@ -43,6 +43,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class PXCProjection: public PXCBase {
 public:
     PXC_CUID_OVERWRITE(0x494A8537);
+    enum { CUID_PROJECTION_CLIPPING_NONE = 0x11a4c912 };
+
+    enum ProjectionOption {
+        PROJECTION_OPTION_DEFAULT = 0,
+        PROJECTION_OPTION_CLIPPING_NONE = 1,
+    };
+
+    __inline PXCProjection* SelectOption(ProjectionOption option) {
+        if (option == PROJECTION_OPTION_CLIPPING_NONE) return (PXCProjection*)QueryInstance(CUID_PROJECTION_CLIPPING_NONE);
+        return (PXCProjection*)QueryInstance(PXCProjection::CUID);
+    }
 
     /** 
         @brief Map depth coordinates to color coordinates for a few pixels.
@@ -142,4 +153,18 @@ public:
         @return The output image in the color image resolution.
     */ 
     virtual PXCImage* PXCAPI CreateDepthImageMappedToColor(PXCImage *depth, PXCImage *color)=0;
+
+    /**
+    @brief    A helper function to access PXCCalibration instance
+    */
+    __inline PXCCalibration* QueryCalibration(void) {
+        return QueryInstance<PXCCalibration>();
+    }
+
+    /**
+    @brief Increase a reference count.
+    */
+    __inline void AddRef(void) {
+        QueryInstance<PXCAddRef>()->AddRef();
+    }
 };

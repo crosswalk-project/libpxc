@@ -29,8 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Defines the PXCTracker interface, which programs may use for 3D tracking.
 */
 #pragma once
-#include "pxcsession.h"
-#include "pxccapture.h"
+#include "pxcsensemanager.h"
 #pragma warning(push)
 #pragma warning(disable:4201) /* nameless structs/unions */
 
@@ -41,7 +40,7 @@ This class defines a standard interface for 3D tracking algorithms.
 */
 class PXCTracker:public PXCBase {
 public:
-	PXC_CUID_OVERWRITE(PXC_UID('T','R','K','R'));
+	PXC_CUID_OVERWRITE(PXC_CUID_TRACKER);
 
 	/**
 	* The tracking states of a target.

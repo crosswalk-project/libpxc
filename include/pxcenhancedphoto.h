@@ -24,7 +24,9 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-/** @file PXCEnhancedPhoto.h
+
+/** 
+	@file PXCEnhancedPhoto.h
 	Defines the PXCEnhancedPhoto interface, which programs may use to process snapshots of captured frames
 */
 #pragma once
@@ -48,7 +50,7 @@ public:
 
 		PXC_CUID_OVERWRITE(PXC_UID('E','P','D','M'));
 
-		_inline static DepthMask* CreateInstance(PXCSession* session){
+		__inline static DepthMask* CreateInstance(PXCSession* session){
 			DepthMask *me=0;
 			session->CreateImpl<DepthMask>(&me);
 			return me;
@@ -90,6 +92,7 @@ public:
 			For every pixel p with depth in the range [POI - frontObjectDepth - nearFalloffDepth, POI - frontObjectDepth], mask[p] equals the "smoothstep" function value.
 			For every pixel p with depth in the range [POI  + backObjectDepth , POI + backOjectDepth + farFallOffDepth], mask[p] equals the "smoothstep" function value.
 			For every pixel p with other depth value, mask[p] = 1.
+			Note: The application must release the returned  image
 		*/
 		virtual PXCImage* PXCAPI ComputeFromThreshold(pxcF32 depthThreshold, MaskParams *maskParams) = 0;
 		__inline PXCImage* ComputeFromThreshold(pxcF32 depthThreshold){
@@ -103,6 +106,7 @@ public:
 			coord: input (x,y) coordinates on the depth map.  
 			Returns a mask in the form of PXCImage for blending with the current photo frame.
 			Note: This function simply calls ComputeFromThreshold underneath.
+			Note: The application must release the returned  image
 		*/
 		virtual PXCImage* PXCAPI ComputeFromCoordinate(PXCPointI32 coord, MaskParams *maskParams) = 0;
 		__inline PXCImage* ComputeFromCoordinate(PXCPointI32 coord){
@@ -120,7 +124,7 @@ public:
 		
 		PXC_CUID_OVERWRITE(PXC_UID('E','P','M','E'));
 
-		_inline static MotionEffect* CreateInstance(PXCSession* session){
+		__inline static MotionEffect* CreateInstance(PXCSession* session){
 			MotionEffect *me=0;
 			session->CreateImpl<MotionEffect>(&me);
 			return me;
@@ -147,6 +151,7 @@ public:
 			rotaion[2]: roll
 			zoomFactor: + zoom in / - zoom out
 			PXCImage: the returned parallaxed image.
+			Note: The application must release the returned image
 		*/
 		virtual PXCImage* PXCAPI Apply(pxcF32 motion[3], pxcF32 rotation[3], pxcF32 zoomFactor) = 0;
 
@@ -160,7 +165,7 @@ public:
 
 		PXC_CUID_OVERWRITE(PXC_UID('E','P','D','R'));
 
-		_inline static DepthRefocus* CreateInstance(PXCSession* session){
+		__inline static DepthRefocus* CreateInstance(PXCSession* session){
 			DepthRefocus *dr=0;
 			session->CreateImpl<DepthRefocus>(&dr);
 			return dr;
@@ -193,7 +198,7 @@ public:
 
 		PXC_CUID_OVERWRITE(PXC_UID('E','P','U','T'));
 
-		_inline static PhotoUtils* CreateInstance(PXCSession* session){
+		__inline static PhotoUtils* CreateInstance(PXCSession* session){
 			PhotoUtils *me=0;
 			session->CreateImpl<PhotoUtils>(&me);
 			return me;
@@ -214,9 +219,18 @@ public:
 			outputs the enhanced depth image
 			photo: input color, depth photo, and calibration data
 			depthQuality: Depth fill Quality: HIGH or LOW for post or realtime processing respectively
-			Note: The application must release the returned enhanced depth image
+			Note: The application must release the returned enhanced depth photo
 		*/
 		virtual PXCPhoto* PXCAPI EnhanceDepth(const PXCPhoto *photo, DepthFillQuality depthQuality)= 0;
+		
+		/**
+			EnhanceDepth: enhance the depth image quality by filling holes and denoising
+			outputs the enhanced depth image
+			sample: The PXCCapture::Sample instance from the SenseManager QuerySample().
+			depthQuality: Depth fill Quality: HIGH or LOW for post or realtime processing respectively
+			Note: The application must release the returned enhanced depth image
+		*/
+		virtual PXCImage* PXCAPI PreviewEnhanceDepth(const PXCCapture::Sample *sample, DepthFillQuality depthQuality) =0;
 
 		/** 
 		DepthMapQuality: output param for Depth Map Quality: 
@@ -242,8 +256,8 @@ public:
 		CommonFOV: Matches the Feild Of View (FOV) of color and depth in the photo. Useful for still images.
 		photo: input image color+depth
 		Returns a photo with primary,unedited color images, and depthmaps cropped to the 
-		common FOV and the camera meatadata recalculated accordingly.
-		Note: Returns a nullptr if function fails
+		common FOV and the camera meatadata recalculated accordingly. Returns a nullptr if function fails
+		Note: The application must release the returned  photo
 		*/
 		virtual PXCPhoto* PXCAPI CommonFOV(const PXCPhoto *photo) = 0;
 
@@ -251,22 +265,36 @@ public:
 		PreviewCommonFOV: Matches the Field of View (FOV) of color and depth in depth photo. Useful for live stream.
 		Use the returned roi to crop the photo
 
+		sample: The PXCCapture::Sample instance from the SenseManager QuerySample().
+		outRect: Output. Returns roi in color image that matches to FOV of depth image that is suitable for all photos in the live stream.
+
+		 @return pxcStatus : PXC_STATUS_NO_ERRROR for successfu operation; PXC_STATUS_DATA_UNAVAILABLE otherwise
+		*/
+		virtual pxcStatus PXCAPI PreviewCommonFOV(const PXCCapture::Sample *sample, PXCRectI32 *rect) = 0;
+
+		/**
+		PreviewCommonFOVDeprecated: Matches the Field of View (FOV) of color and depth in depth photo. Useful for live stream.
+		Use the returned roi to crop the photo
+
 		photo: input image color+depth
 		outRect: Output. Returns roi in color image that matches to FOV of depth image that is suitable for all photos in the live stream.
 
 		 @return pxcStatus : PXC_STATUS_NO_ERRROR for successfu operation; PXC_STATUS_DATA_UNAVAILABLE otherwise
 		*/
-		virtual pxcStatus PXCAPI PreviewCommonFOV(const PXCPhoto *photo, PXCRectI32 *outRect) = 0;
 
-
+		virtual PXC_DEPRECATED("Use PreviewCommonFOV instead") pxcStatus PXCAPI PreviewCommonFOVDeprecated(const PXCPhoto *photo, PXCRectI32 *outRect) = 0;
+		__inline pxcStatus PreviewCommonFOV(const PXCPhoto *photo, PXCRectI32 *outRect) {
+				 return PreviewCommonFOVDeprecated(photo, outRect);
+		}
+	
 		/** 
 		Crop: The primary image, the camera[0] RGB and depth images are cropped 
 		and the intrinsic / extrinsic info is updated.
 		photo: input image color+depth
 		rect : top left corner (x,y) plus width and height of the window to keep 
 		and crop all the rest
-		Returns a photo that has all its images cropped and metadata fixed accordingly.
-		Note: Returns a nullptr if function fails
+		Returns a photo that has all its images cropped and metadata fixed accordingly. Returns a nullptr if function fails
+		Note: The application must release the returned  photo
 		*/
 		virtual PXCPhoto* PXCAPI PhotoCrop(const PXCPhoto *photo, PXCRectI32 rect) = 0;
 
@@ -276,8 +304,8 @@ public:
 		photo: input image color+depth
 		width: the new width.
 		enhancementType: if the inPhoto has no enhanced depth, then do this type of depth enhancement before resizing.
-		Returns a Depth map that has the same aspect ratio as the color image resolution.
-		Note: Returns a nullptr if the aspect ratio btw color and depth is not preserved
+		Returns a Depth map that has the same aspect ratio as the color image resolution. Returns a nullptr if the aspect ratio btw color and depth is not preserved
+		Note: The application must release the returned  photo
 		*/
 		virtual PXCPhoto* PXCAPI DepthResize(const PXCPhoto *photo, pxcI32 width, DepthFillQuality enhancementType) = 0;
 		__inline PXCPhoto* DepthResize(const PXCPhoto *photo, pxcI32 width) { 
@@ -290,8 +318,8 @@ public:
 		Only the primary image is resized.
 		photo - input photo.
 		width - the new width.
-		Returns a photo with the reference (primary) color image resized while maintaining the aspect ratio.
-		Note: Returns a nullptr when the fcn fails
+		Returns a photo with the reference (primary) color image resized while maintaining the aspect ratio. Returns a nullptr when the fcn fails
+		Note: The application must release the returned  photo
 		*/
 		virtual PXCPhoto* PXCAPI ColorResize(const PXCPhoto *photo, pxcI32 width) = 0;
 
@@ -301,8 +329,8 @@ public:
 		the corresponding intrinsic/extrinsic info.
 		photo: input photo.
 		degrees: the angle of rotation around the center of the color image in degrees +/- sign for clockwise and counterclockwise.
-		Returns a rotated photo.
-		Note: Returns a nullptr when the function fails
+		Returns a rotated photo. Returns a nullptr when the function fails
+		Note: The application must release the returned  photo
 		*/	
 		virtual PXCPhoto* PXCAPI PhotoRotate(const PXCPhoto *photo, pxcF32 degrees) = 0;
 	};
@@ -315,7 +343,7 @@ public:
 
 		PXC_CUID_OVERWRITE(PXC_UID('E','P','S','G'));
 
-		_inline static Segmentation* CreateInstance(PXCSession* session){
+		__inline static Segmentation* CreateInstance(PXCSession* session){
 			Segmentation *me=0;
 			session->CreateImpl<Segmentation>(&me);
 			return me;
@@ -327,6 +355,7 @@ public:
 		photo: input color and depth photo.
 		inMask : a mask signaling the foreground or the object to be segmented. the pixels of the object should be set to 255.  
 		Returns a mask in the form of PXCImage with detected pixels set to 255 and undetected pixels set to 0.
+		Note: The application must release the returned  image
 		*/
 		virtual PXCImage* PXCAPI ObjectSegment(const PXCPhoto *sample, const PXCImage *inMask) = 0;
 			
@@ -336,18 +365,21 @@ public:
 		length: length of the array
 		isForeground: bool set to true if input hint locations are foreground and false if background
 		Returns a mask in the form of PXCImage with detected pixels set to 255 and undetected pixels set to 0.
+		Note: The application must release the returned  image
 		*/
 		virtual PXCImage* PXCAPI RefineMask(const PXCPointI32* points, pxcI32 length, bool isForeground) = 0;
 		
 		/** 
 		Undo: undo last hints.
 		Returns a mask in the form of PXCImage with detected pixels set to 255 and undetected pixels set to 0.
+		Note: The application must release the returned  image
 		*/
 		virtual PXCImage* PXCAPI Undo() = 0;
 		
 		/** 
 		Redo: Redo the previously undone hint.
 		Returns a mask in the form of PXCImage with detected pixels set to 255 and undetected pixels set to 0.
+		Note: The application must release the returned  image
 		*/
 		virtual PXCImage* PXCAPI Redo() = 0;
 
@@ -358,9 +390,10 @@ public:
 		topLeftCoord    : top left corner of the object to segment.  
 		bottomRightCoord: Bottom right corner of the object to segment.
 		Returns a mask in the form of PXCImage with detected pixels set to 255 and undetected pixels set to 0.
+		Note: The application must release the returned  image
 		*/
-		virtual __declspec(deprecated("Use ObjectSegment instead")) PXCImage* PXCAPI ObjectSegmentDeprecated(const PXCPhoto *photo, PXCPointI32 topLeftCoord, PXCPointI32 bottomRightCoord) = 0;
-		_inline PXCImage* ObjectSegment(const PXCPhoto *photo, PXCPointI32 topLeftCoord, PXCPointI32 bottomRightCoord){
+		virtual PXC_DEPRECATED("Use ObjectSegment instead") PXCImage* PXCAPI ObjectSegmentDeprecated(const PXCPhoto *photo, PXCPointI32 topLeftCoord, PXCPointI32 bottomRightCoord) = 0;
+		__inline PXCImage* ObjectSegment(const PXCPhoto *photo, PXCPointI32 topLeftCoord, PXCPointI32 bottomRightCoord){
 			return ObjectSegmentDeprecated(photo, topLeftCoord, bottomRightCoord);
 		}
 
@@ -371,9 +404,10 @@ public:
 		1 = foreground
 		2 = background
 		Returns a mask in the form of PXCImage with detected pixels set to 255 and undetected pixels set to 0.
+		Note: The application must release the returned  image
 		*/
-		virtual __declspec(deprecated("Use RefineMask instead")) PXCImage* PXCAPI RefineMaskDeprecated(const PXCImage *hints) = 0;
-		_inline PXCImage* RefineMask(const PXCImage *hints){
+		virtual PXC_DEPRECATED("Use RefineMask instead") PXCImage* PXCAPI RefineMaskDeprecated(const PXCImage *hints) = 0;
+		__inline PXCImage* RefineMask(const PXCImage *hints){
 			return RefineMaskDeprecated(hints);
 		}
 	};
@@ -386,69 +420,116 @@ public:
 
 		PXC_CUID_OVERWRITE(PXC_UID('E','P','P','P'));
 
-		_inline static Paster* CreateInstance(PXCSession* session){
+		__inline static Paster* CreateInstance(PXCSession* session){
 			Paster *me=0;
 			session->CreateImpl<Paster>(&me);
 			return me;
 		}
 
+	
 		/** 
-		PasteEffects:  
-		matchIllumination: flag to match Illumination, default value is true		
-		transparency: (default) 0.0f = opaque, 1.0f = transparent sticker
-		embossHighFreqPass: High Frequency Pass during emboss, default 0.0f no emboss, 1.0f max	
-		byPixelCorrection: default false, flag to use by pixel illumination correction, takes shadows in account
-		colorCorrection: default false, flag to add color correction		
+			PasteEffects:  
+			matchIllumination: Matches sticker illumination to the global RGB scene. Default is true.	
+			transparency: Sets Transparency level of the sticker. 0.0f = Opaque (Default); 1.0f = Transparent
+			embossHighFreqPass: High Frequency Pass during emboss, default 0.0f no emboss, 1.0f max	
+			shadingCorrection: Matches sticker illumination to local RGB scene, takes shadows in account. Default is false.
+			colorCorrection: Flag to add color correction; Default is false.
+			embossingAmplifier: Embossing Intensity Multiplier. default: 1.0f. should be positive
+			skinDetection: Flag to detect skin under pasted sticker; default is false
 		*/
 		struct PasteEffects {
-			pxcBool matchIllumination; // flag to match Illumination, default value is true		
+			pxcBool matchIllumination; // Flag to match global Illumination, default value is true		
 			pxcF32 transparency;       // (default) 0.0f = opaque, 1.0f = transparent sticker
-			pxcF32 embossHighFreqPass; // High Frequency Pass during emboss, default 0.0f no emboss, 1.0f max	
-			pxcBool shadingCorrection;   // default false, flag to use pixel illumination correction, takes shadows in account
-			pxcBool colorCorrection;     // default false, flag to add color correction		
+			pxcF32 embossHighFreqPass; // Level of details to emboss, (default) 0.0f = no emboss, 1.0f =max	
+			pxcBool shadingCorrection;   // Flag to match local illumination. Default is false
+			pxcBool colorCorrection;     // Flag to add color correction; Default is false.	
+			pxcF32 embossingAmplifier; // Embossing Intesity Multiplier. Default is 1.0f. Should be positive
+			pxcBool skinDetection; // Flag to detect skin under pasted sticker; default is false
 			pxcF32 reserved[6];
 
-			PasteEffects(){
-				matchIllumination = true;
-				transparency = 0.0;
-				embossHighFreqPass = 0.0;	
-				shadingCorrection = false;
-				colorCorrection = false;
+			PasteEffects(pxcBool matchIllumination1 = true, pxcF32 transparency1=0.0, pxcF32 embossHighFreqPass1 = 0.0, 
+				pxcBool shadingCorrection1 = false, pxcBool colorCorrection1 = false, pxcF32 embossingAmplifier1= 1.0, 
+				pxcBool skinDetection1 = false):reserved(){
+
+				matchIllumination = matchIllumination1;
+				transparency = transparency1;
+				embossHighFreqPass = embossHighFreqPass1;	
+				shadingCorrection = shadingCorrection1;
+				colorCorrection = colorCorrection1;
+				embossingAmplifier = embossingAmplifier1;
+				skinDetection = skinDetection1;
+				
 			};
 		};
 
+		/* PasteType: Indicates whether sticker is pasted on detected planes or on any surface */
+		enum PasteType {
+			PLANE =0,
+			SURFACE,
+		};
+			
 		/** 
-		SetPhoto: sets the photo that needs to be processed.
-		photo: photo to be processed [color + depth] 
-		Returns PXC_STATUS_NO_ERROR if success. PXC_STATUS_PROCESS_FAILED if process failed
+			SetPhoto: sets the photo that needs to be processed.
+			photo: photo to be processed [color + depth] 
+			pasteMode: Indicates whether pasteOnPlane or pasteOnSurface
+			Returns PXC_STATUS_NO_ERROR if success. PXC_STATUS_PROCESS_FAILED if process failed
 		*/
-		virtual pxcStatus PXCAPI SetPhoto(const PXCPhoto *photo) = 0;
-		
+		virtual pxcStatus PXCAPI SetPhoto(const PXCPhoto *photo, PasteType pasteMode) = 0;
+		__inline pxcStatus PXCAPI SetPhoto(const PXCPhoto *photo) {
+			return SetPhoto(photo, PasteType::PLANE);		
+		}
+
 		/**
 		GetPlanesMap: return plane indices map for current SetPhoto
+		Useful for PLANE mode only
 		Returns a PXCImage of the plane indices in a form of a mask.
+		Note: The application must release the returned  image
 		*/
 		virtual PXCImage* PXCAPI GetPlanesMap() = 0;
 
 		/** 
 		StickerData:  
-		coord : insertion coordinates
-		height: sticker height in mm, default -1 auto-scale		
+		height: sticker size in image, default =100		
 		rotation: in-plane rotation in degree, default 0	
-		isCenter: Anchor point. False means coordinate is top left, true means coordinate is center.
+		isCenter: No Longer Supported. Anchor point. True means coordinate is center. 
 		*/
 		struct StickerData {
 			pxcF32  height; 
 			pxcF32  rotation;
-			pxcBool isCenter;
+			PXC_DEPRECATED("No longer supported") pxcBool isCenter;
 			pxcF32 reserved[6];
-
-			StickerData(){
-				height = -1.0f;
-				rotation = 0.0f;	
-				isCenter = false;
+			StickerData(pxcF32 height1= 200, pxcF32 rotation1=0):reserved(){
+				height = height1;
+				rotation = rotation1;
+				isCenter = true;
 			};
 		};
+
+		/**
+		AddSticker: Adds a sticker and its configuration information into the paster.
+		sticker: the 2D image to paste onto the photo (foreground image)
+		coord : location in pixels to insert the image 
+		stickerData: the sticker size and paste location .
+		pasteEffects: pasting effects to apply to the image
+		
+		Returns the ID off the sticker that can be used as the input to the PreviewSticker(), 
+			UpdateSticker(), and RemoveSticker() functions. Sticker IDs will always be greater than
+			or equal to zero. A negative return value indicates failure.
+		*/
+		virtual int32_t PXCAPI AddSticker(PXCImage* sticker, PXCPointI32 coord, StickerData * stickerData, PasteEffects* pasteEffects) = 0;
+		__inline int32_t PXCAPI AddSticker(PXCImage* sticker, PXCPointI32 coord, StickerData * stickerData) {
+			PasteEffects effects;
+			return AddSticker(sticker, coord, stickerData, &effects);
+		}
+		__inline int32_t PXCAPI AddSticker(PXCImage* sticker, PXCPointI32 coord) {
+			StickerData data;
+			PasteEffects effects;
+			return AddSticker(sticker, coord, &data, &effects);
+		}
+		__inline int32_t PXCAPI AddSticker(PXCImage* sticker, PXCPointI32 coord, PasteEffects* pasteEffects) {
+			StickerData data;
+			return AddSticker(sticker, coord, &data, pasteEffects);
+		}
 
 		/** 
 		SetSticker: sets the sticker that will be pasted with all configurations needed and paste effects.
@@ -458,23 +539,43 @@ public:
 		pasteEffects: the pasting effects.
 		Returns PXC_STATUS_NO_ERROR if success. PXC_STATUS_PROCESS_FAILED if process failed
 		*/
+		PXC_DEPRECATED("Use addSticker() instead")
 		virtual pxcStatus PXCAPI SetSticker(PXCImage* sticker, PXCPointI32 coord, StickerData *stickerData, PasteEffects* pasteEffects) = 0;
-		_inline pxcStatus PXCAPI SetSticker(PXCImage* sticker, PXCPointI32 coord, StickerData *stickerData){
+		__inline pxcStatus PXCAPI SetSticker(PXCImage* sticker, PXCPointI32 coord, StickerData *stickerData){
 			PasteEffects pasteEffects;
 			return SetSticker(sticker, coord, stickerData, &pasteEffects);
 		}
-		_inline pxcStatus PXCAPI SetSticker(PXCImage* sticker, PXCPointI32 coord){
+		__inline pxcStatus PXCAPI SetSticker(PXCImage* sticker, PXCPointI32 coord, PasteEffects* pasteEffects){
+			StickerData  stickerData;
+			return SetSticker(sticker, coord, &stickerData, pasteEffects);
+		}
+		__inline pxcStatus PXCAPI SetSticker(PXCImage* sticker, PXCPointI32 coord){
 			PasteEffects pasteEffects;
 			StickerData  stickerData;
 			return SetSticker(sticker, coord, &stickerData, &pasteEffects);
 		}
 
 		/** 
-		PreviewSticker: returns a sticker mask showing the location of the pasted sticker.
-		Returns a PXCImage of the previewed sticker in a form of a mask.
+		PreviewSticker: Returns a sticker mask showing the location of the sticker.
+		Note: Useful for PLANE mode only
+		@return: PXCImage with returns values of 0, 1, 2 :
+		2 U 1 - region where the sticker could be pasted if there were no constraints
+		1 - apropriate region to paste sticker considering constraints: e.g. plane
+		0 - all other pixels
+		StickerID: The ID of the sticker to preview
+		Note: The application must release the returned  image
 		*/
-		virtual PXCImage* PXCAPI PreviewSticker() = 0;
+		virtual PXCImage* PXCAPI PreviewSticker(pxcI32 stickerID = 0) = 0;
 
+		/**
+		GetStickerROI: Gives a bounding box showing the location of the sticker
+		Note: Useful for PLANE mode only
+        roi: The output structure for the bounding box
+        stickerID: The ID of the sticker to obtain the bounding box for.
+		@return: PXC_STATUS_NO_ERROR if operation succeeds
+		*/
+		virtual pxcStatus PXCAPI GetStickerROI(PXCRectI32* roi, pxcI32 stickerID = 0) =0;
+		
 		/** 
 		Paste: pastes a smaller 2D image (sticker) onto a bigger color + depth image (background).
 		The smaller foreground image, is rendered according to a
@@ -483,9 +584,37 @@ public:
 		according to the alpha channal of the foreground image.
 
 		Returns the embeded foreground with background image.
+		Note: The application must release the returned photo
 		*/
 		virtual PXCPhoto* PXCAPI Paste() = 0;
 		
+		/*
+		UpdateSticker: Make changes to a sticker that has already been added by referencing its
+		stickerID number. Passing nullptr to any of the pointer arguments will cause that argument
+		to be ignored. For example, if you only want to change the location of the sticker, you would
+		pass a valid point for coord and pass nullptr for stickerData and pasteEffects.
+
+		Returns: PXC_STATUS_NO_ERROR if successful. PXC_STATUS_ITEM_UNAVAILABLE if the stickerID is
+			not valid.
+		 */
+		virtual pxcStatus PXCAPI UpdateSticker(pxcI32 stickerID, PXCPointI32* coord, StickerData * stickerData, PasteEffects * pasteEffects) = 0;
+		
+		/*
+		RemoveSticker: Removes the sticker reference to by stickerID from the scene. After removing
+		the sticker, its stickerID is no longer valid.
+
+		Returns: PXC_STATUS_NO_ERROR if successful. PXC_STATUS_ITEM_UNAVAILABLE if the stickerID
+		is not valid.
+		 */
+		virtual pxcStatus PXCAPI RemoveSticker(pxcI32 stickerID) = 0;
+
+		/*
+		RemoveAllStickers: remove all stickers from the scene. After calling this function, all
+		previously obtained stickerIDs are no longer valid. Note that if no stickers have been
+		added to the scene, then this function has no effect.
+		*/
+		virtual void PXCAPI RemoveAllStickers() = 0;
+
 		/** 
 		PasteOnPlane: This function is provided for texturing a smaller 2D image (foreground)
 		onto a bigger color + depth image (background). The smaller foreground image, is rendered according to a
@@ -496,29 +625,20 @@ public:
 		embedIm: the image to embed in the photo (foreground image)
 		topLeftCoord, bottomLeftCoord: are the top left corner and the bottom left corner of where the user wants to embed the image.
 		Returns the embeded foreground with background image.
+		Note: The application must release the returned photo
 		*/
-		virtual __declspec(deprecated("Use PasteOnPlane instead")) PXCPhoto* PXCAPI PasteOnPlaneDeprecated(const PXCPhoto *photo, PXCImage* embedIm, PXCPointI32 topLeftCoord, PXCPointI32 bottomLeftCoord, PasteEffects* pasteEffects) = 0;
-		_inline PXCPhoto* PXCAPI PasteOnPlane(const PXCPhoto *photo, PXCImage* embedIm, PXCPointI32 topLeftCoord, PXCPointI32 bottomLeftCoord, PasteEffects* pasteEffects){
+		virtual PXC_DEPRECATED("Use PasteOnPlane instead") PXCPhoto* PXCAPI PasteOnPlaneDeprecated(const PXCPhoto *photo, PXCImage* embedIm, PXCPointI32 topLeftCoord, PXCPointI32 bottomLeftCoord, PasteEffects* pasteEffects) = 0;
+		__inline PXCPhoto* PXCAPI PasteOnPlane(const PXCPhoto *photo, PXCImage* embedIm, PXCPointI32 topLeftCoord, PXCPointI32 bottomLeftCoord, PasteEffects* pasteEffects){
 			return PasteOnPlaneDeprecated(photo, embedIm, topLeftCoord, bottomLeftCoord, pasteEffects);
 		}
-
-		/** 
-		PasteOnPlane: This function is provided for texturing a smaller 2D image (foreground)
-		onto a bigger color + depth image (background). The smaller foreground image, is rendered according to a
-		user-specified position and an auto-detected plane orientation onto the background image.
-		The auto-oriented foreground image and the color data of the background image are composited together
-		according to the alpha channal of the foreground image.
-
-		embedIm: the image to embed in the photo (foreground image)
-		topLeftCoord, bottomLeftCoord: are the top left corner and the bottom left corner of where the user wants to embed the image.
-		Returns the embeded foreground with background image.
-		*/
-		_inline PXCPhoto* PXCAPI PasteOnPlane(const PXCPhoto *photo, PXCImage* embedIm, PXCPointI32 topLeftCoord, PXCPointI32 bottomLeftCoord){
+		__inline PXCPhoto* PXCAPI PasteOnPlane(const PXCPhoto *photo, PXCImage* embedIm, PXCPointI32 topLeftCoord, PXCPointI32 bottomLeftCoord){
 			PasteEffects pasteEffects;
 			return PasteOnPlaneDeprecated(photo, embedIm, topLeftCoord, bottomLeftCoord, &pasteEffects);
 		}
 
 	};
+	
+	
 	
 	/**
 	EXPERIMENTAL: This class defines a standard interface for Enhanced Photography Measurement Algorithms.
@@ -528,7 +648,7 @@ public:
 
 		PXC_CUID_OVERWRITE(PXC_UID('E','P','M','D'));
 
-		_inline static Measurement* CreateInstance(PXCSession* session){
+		__inline static Measurement* CreateInstance(PXCSession* session){
 			Measurement *me=0;
 			session->CreateImpl<Measurement>(&me);
 			return me;

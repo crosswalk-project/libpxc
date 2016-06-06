@@ -29,8 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	using enhanced videography features.
  */
 #pragma once
-#include "pxcbase.h"
-#include "pxcimage.h"
+#include "pxcsensemanager.h"
 
 /**
 	This class defines a standard interface for enhanced photography algorithms.
@@ -38,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class PXCEnhancedVideo:public PXCBase {
 public:
 
-	PXC_CUID_OVERWRITE(PXC_UID('E','V','I','N'));
+	PXC_CUID_OVERWRITE(PXC_CUID_ENHANCED_VIDEO);
 
 	/* 
 		Input param for Tracking Method: 

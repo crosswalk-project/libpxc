@@ -56,7 +56,8 @@ public:
 	enum LocalizationMechanism
 	{
 		LM_EDGE_BOXES,
-		LM_OBJECTS_ON_PLANE
+		LM_OBJECTS_ON_PLANE,
+		LM_CNN
 	};
 
 	struct RecognitionConfiguration
