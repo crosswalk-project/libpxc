@@ -25,7 +25,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
-#include "pxccapture.h"
+#include "pxcsensemanager.h"
 
 /**
 	Instance of this interface class can be created using 
@@ -186,7 +186,7 @@ class PXCBlockMeshingData : public PXCBase
 class PXCScenePerception : public PXCBase
 {
 	public:
-		PXC_CUID_OVERWRITE(PXC_UID('S', 'C', 'N', 'P'));
+		PXC_CUID_OVERWRITE(PXC_CUID_SCENE_PERCEPTION);
 		
 		enum TrackingAccuracy 
 		{

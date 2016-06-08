@@ -25,14 +25,14 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
-#include "pxcbase.h"
+#include "pxcsensemanager.h"
 #include "pxcfaceconfiguration.h"
 #include "pxcfacedata.h"
 
 class PXCFaceModule : public PXCBase 
 {
 public:
-	PXC_CUID_OVERWRITE(PXC_UID('F','A','3','D'));
+	PXC_CUID_OVERWRITE(PXC_CUID_FACE_MODULE);
 	
 	/* create a new copy of active configuration */
 	virtual PXCFaceConfiguration* PXCAPI CreateActiveConfiguration() = 0;

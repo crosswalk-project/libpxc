@@ -89,9 +89,15 @@ public:
     /** 
         @brief Export the photo content to the XDM File Format v2.0.
 		@param[in]   filename           The file name.
+		@param[in]	 removeOriginalImage Flag to indicate whether to remove original image from XDM photo if container image is processed. This will reduce XDM photo size.
+					 True = Removes the original image from XDM photo. False (Default) = Keeps the original image if the container image is processed.
 		@return PXC_STATUS_NO_ERROR     Successful execution.
     */ 
-    virtual pxcStatus PXCAPI SaveXDM(pxcCHAR *filename)=0;
+
+	virtual pxcStatus PXCAPI SaveXDM(pxcCHAR *filename, pxcBool removeOriginalImage)=0;
+	__inline pxcStatus SaveXDM(pxcCHAR *filename){
+		return SaveXDM(filename, false);
+	}
 
 	/**
 	@brief Copy the content from the source photo

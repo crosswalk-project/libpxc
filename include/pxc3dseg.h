@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef PXC3DSEG_H
 #define PXC3DSEG_H
-#include "pxccapture.h"
+#include "pxcsensemanager.h"
 
 class PXC3DSeg : public PXCBase
 {
@@ -38,7 +38,7 @@ public:
     /// The returned object's Release method can be used to release the reference.
     virtual PXCImage* PXCAPI AcquireSegmentedImage(void)=0;
 
-    PXC_CUID_OVERWRITE(PXC_UID('S', 'G', 'I', '1'));
+    PXC_CUID_OVERWRITE(PXC_CUID_3D_SEG);
 
     enum AlertEvent 
     {

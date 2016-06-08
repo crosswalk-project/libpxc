@@ -28,19 +28,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include "pxccapturemanager.h"
 #include "pxcsession.h"
-#include "pxcfacemodule.h"
-#include "pxctracker.h"
-#include "pxchandmodule.h"
-#include "pxchandcursormodule.h"
-#include "pxcblobmodule.h"
-#include "pxcpersontrackingmodule.h"
-#include "pxctouchlesscontroller.h"
-#include "pxc3dseg.h"
-#include "pxc3dscan.h"
-#include "pxcsceneperception.h"
-#include "pxcenhancedvideo.h"
-#include "pxcobjectrecognitionmodule.h"
 
+/* Forward declaration of known modules */
+class PXCFaceModule;
+class PXCHandModule;
+class PXCHandCursorModule;
+class PXCBlobModule;
+class PXCPersonTrackingModule;
+class PXCTouchlessController;
+class PXC3DSeg;
+class PXC3DScan;
+class PXCScenePerception;
+class PXCEnhancedVideo;
+class PXCObjectRecognitionModule;
+class PXCTracker;
+/* and their interface identifiers */
+enum {
+    PXC_CUID_FACE_MODULE            = PXC_UID('F', 'A', '3', 'D'),
+    PXC_CUID_HAND_MODULE            = PXC_UID('H', 'A', 'N', 'N'),
+    PXC_CUID_HAND_CURSOR_MODULE     = PXC_UID('H', 'C', 'M', 'N'),
+    PXC_CUID_BLOB_MODULE            = PXC_UID('B', 'M', 'M', 'D'),
+    PXC_CUID_PERSON_TRACKING_MODULE = PXC_UID('P', 'O', 'T', 'M'),
+    PXC_CUID_TOUCHLESS_CONTROLLER   = PXC_UID('F', 'L', 'K', 'S'),
+    PXC_CUID_3D_SEG                 = PXC_UID('S', 'G', 'I', '1'),
+    PXC_CUID_3D_SCAN                = PXC_UID('S', 'C', 'I', '1'),
+    PXC_CUID_SCENE_PERCEPTION       = PXC_UID('S', 'C', 'N', 'P'),
+    PXC_CUID_ENHANCED_VIDEO         = PXC_UID('E', 'V', 'I', 'N'),
+    PXC_CUID_OBJECT_RECOGNITION_MODULE = PXC_UID('O', 'B', 'J', 'M'),
+    PXC_CUID_TRACKER                = PXC_UID('T', 'R', 'K', 'R'),
+};
 
 /**
     This is the main interface for the SDK pipeline.
@@ -150,7 +166,7 @@ public:
         @return The sample instance, or NULL if the captured sample is not available.
     */
     __inline PXCCapture::Sample* QueryFaceSample(void) {
-        return QuerySample(PXCFaceModule::CUID);
+        return QuerySample(PXC_CUID_FACE_MODULE);
     }
 
     /**
@@ -159,7 +175,7 @@ public:
         @return The sample instance, or NULL if the captured sample is not available.
     */
     __inline PXCCapture::Sample* QueryHandSample(void) {
-        return QuerySample(PXCHandModule::CUID);
+        return QuerySample(PXC_CUID_HAND_MODULE);
     }
 
 
@@ -169,16 +185,16 @@ public:
         @return The sample instance, or NULL if the captured sample is not available.
     */
     __inline PXCCapture::Sample* QueryHandCursorSample(void) {
-        return QuerySample(PXCHandCursorModule::CUID);
+        return QuerySample(PXC_CUID_HAND_CURSOR_MODULE);
     }
 
-	   /**
+	/**
         @brief    Return the captured sample for the object recognition module.
         The captured sample is managed internally by the SenseManager. Do not release the sample.
         @return The sample instance, or NULL if the captured sample is not available.
     */
     __inline PXCCapture::Sample* QueryObjectRecognitionSample(void) {
-		return QuerySample(PXCObjectRecognitionModule::CUID);
+		return QuerySample(PXC_CUID_OBJECT_RECOGNITION_MODULE);
     }
 
     /**
@@ -187,18 +203,17 @@ public:
         @return The sample instance, or NULL if the captured sample is not available.
     */
     __inline PXCCapture::Sample* QueryBlobSample(void) {
-        return QuerySample(PXCBlobModule::CUID);
+        return QuerySample(PXC_CUID_BLOB_MODULE);
     }
 
-	  /**
+	/**
         @brief    Return the captured sample for the Person tracking module.
         The captured sample is managed internally by the SenseManager. Do not release the sample.
         @return The sample instance, or NULL if the captured sample is not available.
     */
 	__inline PXCCapture::Sample* QueryPersonTrackingSample(void) {
-		return QuerySample(PXCPersonTrackingModule::CUID);
+		return QuerySample(PXC_CUID_PERSON_TRACKING_MODULE);
     }
-
 
     /**
         @brief    Return the captured sample for the scene perception module.
@@ -206,7 +221,7 @@ public:
         @return The sample instance, or NULL if the captured sample is not available.
     */
     __inline PXCCapture::Sample* QueryScenePerceptionSample(void) {
-        return QuerySample(PXCScenePerception::CUID);
+        return QuerySample(PXC_CUID_SCENE_PERCEPTION);
     }
 
     /**
@@ -215,7 +230,7 @@ public:
 		@return The sample instance, or NULL if the captured sample is not available.
 	*/
 	__inline const PXCCapture::Sample* QueryTrackerSample(void) {
-		return QuerySample(PXCTracker::CUID);
+		return QuerySample(PXC_CUID_TRACKER);
 	}
 
 	/**
@@ -224,7 +239,7 @@ public:
 		@return The sample instance, or NULL if the captured sample is not available.
 	*/
 	__inline const PXCCapture::Sample* QueryEnhancedVideoSample(void) {
-		return QuerySample(PXCEnhancedVideo::CUID);
+		return QuerySample(PXC_CUID_ENHANCED_VIDEO);
 	}
 
     /**
@@ -243,13 +258,13 @@ public:
         @return The module instance.
     */
     __inline PXCFaceModule* QueryFace(void) { 
-        PXCBase *instance=QueryModule(PXCFaceModule::CUID);
-        return instance?instance->QueryInstance<PXCFaceModule>():0; 
+        PXCBase *instance=QueryModule(PXC_CUID_FACE_MODULE);
+        return instance ? (PXCFaceModule*)instance->QueryInstance(PXC_CUID_FACE_MODULE):0;
     }
 
 	__inline PXCPersonTrackingModule* QueryPersonTracking(void) {
-		PXCBase *instance = QueryModule(PXCPersonTrackingModule::CUID);
-		return instance ? instance->QueryInstance<PXCPersonTrackingModule>() : 0;
+		PXCBase *instance = QueryModule(PXC_CUID_PERSON_TRACKING_MODULE);
+		return instance ? (PXCPersonTrackingModule*)instance->QueryInstance(PXC_CUID_PERSON_TRACKING_MODULE) : 0;
     }
 
     /**
@@ -259,8 +274,8 @@ public:
 		@return The module instance.
 	*/
 	__inline PXCTracker* QueryTracker(void) { 
-		PXCBase *instance=QueryModule(PXCTracker::CUID);
-		return instance?instance->QueryInstance<PXCTracker>():0; 
+		PXCBase *instance=QueryModule(PXC_CUID_TRACKER);
+		return instance ? (PXCTracker*)instance->QueryInstance(PXC_CUID_TRACKER):0;
 	}
 
 
@@ -271,8 +286,8 @@ public:
         @return The module instance.
     */
     __inline PXCHandModule* QueryHand(void) { 
-        PXCBase *instance=QueryModule(PXCHandModule::CUID);
-        return instance?instance->QueryInstance<PXCHandModule>():0;
+        PXCBase *instance=QueryModule(PXC_CUID_HAND_MODULE);
+        return instance ? (PXCHandModule*)instance->QueryInstance(PXC_CUID_HAND_MODULE):0;
     }
 
 	 /**
@@ -282,8 +297,8 @@ public:
         @return The module instance.
     */
     __inline PXCHandCursorModule* QueryHandCursor(void) { 
-        PXCBase *instance=QueryModule(PXCHandCursorModule::CUID);
-        return instance?instance->QueryInstance<PXCHandCursorModule>():0;
+        PXCBase *instance=QueryModule(PXC_CUID_HAND_CURSOR_MODULE);
+        return instance ? (PXCHandCursorModule*)instance->QueryInstance(PXC_CUID_HAND_CURSOR_MODULE):0;
     }
 
 	/**
@@ -293,8 +308,8 @@ public:
         @return The module instance.
     */
 	__inline PXCObjectRecognitionModule* QueryObjectRecognition(void) { 
-		PXCBase *instance=QueryModule(PXCObjectRecognitionModule::CUID);
-		return instance?instance->QueryInstance<PXCObjectRecognitionModule>():0;
+		PXCBase *instance=QueryModule(PXC_CUID_OBJECT_RECOGNITION_MODULE);
+		return instance ? (PXCObjectRecognitionModule*)instance->QueryInstance(PXC_CUID_OBJECT_RECOGNITION_MODULE):0;
     }
 
     /**
@@ -304,8 +319,8 @@ public:
         @return The module instance.
     */
     __inline PXCBlobModule* QueryBlob(void) { 
-        PXCBase *instance=QueryModule(PXCBlobModule::CUID);
-        return instance?instance->QueryInstance<PXCBlobModule>():0;
+        PXCBase *instance=QueryModule(PXC_CUID_BLOB_MODULE);
+        return instance ? (PXCBlobModule*)instance->QueryInstance(PXC_CUID_BLOB_MODULE):0;
     }
 
 
@@ -316,8 +331,8 @@ public:
         @return The module instance.
     */
 	__inline PXCPersonTrackingModule* QueryPersonTacking(void) {
-		PXCBase *instance = QueryModule(PXCPersonTrackingModule::CUID);
-		return instance ? instance->QueryInstance<PXCPersonTrackingModule>() : 0;
+		PXCBase *instance = QueryModule(PXC_CUID_PERSON_TRACKING_MODULE);
+		return instance ? (PXCPersonTrackingModule*)instance->QueryInstance(PXC_CUID_PERSON_TRACKING_MODULE) : 0;
     }
 
 
@@ -328,8 +343,8 @@ public:
         @return The module instance.
     */
     __inline PXCTouchlessController* QueryTouchlessController(void) { 
-        PXCBase *instance=QueryModule(PXCTouchlessController::CUID);
-        return instance?instance->QueryInstance<PXCTouchlessController>():0;
+        PXCBase *instance=QueryModule(PXC_CUID_TOUCHLESS_CONTROLLER);
+        return instance ? (PXCTouchlessController*)instance->QueryInstance(PXC_CUID_TOUCHLESS_CONTROLLER):0;
     }
 
     /**
@@ -339,8 +354,8 @@ public:
         @return The module instance.
     */
     __inline PXC3DSeg* Query3DSeg(void) { 
-        PXCBase *instance=QueryModule(PXC3DSeg::CUID);
-        return instance?instance->QueryInstance<PXC3DSeg>():0; 
+        PXCBase *instance=QueryModule(PXC_CUID_3D_SEG);
+        return instance ? (PXC3DSeg*)instance->QueryInstance(PXC_CUID_3D_SEG):0;
     }
     
     /**
@@ -350,8 +365,8 @@ public:
         @return The module instance.
     */
     __inline PXC3DScan* Query3DScan(void) { 
-        PXCBase *instance=QueryModule(PXC3DScan::CUID);
-        return instance?instance->QueryInstance<PXC3DScan>():0; 
+        PXCBase *instance=QueryModule(PXC_CUID_3D_SCAN);
+        return instance ? (PXC3DScan*)instance->QueryInstance(PXC_CUID_3D_SCAN):0;
     }
 
     /**
@@ -361,8 +376,8 @@ public:
     @return The module instance.
     */
     __inline PXCScenePerception* QueryScenePerception(void) {
-        PXCBase *instance = QueryModule(PXCScenePerception::CUID);
-        return instance ? instance->QueryInstance<PXCScenePerception>() : 0;
+        PXCBase *instance = QueryModule(PXC_CUID_SCENE_PERCEPTION);
+        return instance ? (PXCScenePerception*)instance->QueryInstance(PXC_CUID_SCENE_PERCEPTION) : 0;
     }
 
 	 /**
@@ -372,8 +387,8 @@ public:
 		@return The module instance.
 	*/
 	__inline PXCEnhancedVideo* QueryEnhancedVideo(void) { 
-		PXCBase *instance=QueryModule(PXCEnhancedVideo::CUID);
-		return instance?instance->QueryInstance<PXCEnhancedVideo>():0; 
+		PXCBase *instance=QueryModule(PXC_CUID_ENHANCED_VIDEO);
+		return instance ? (PXCEnhancedVideo*)instance->QueryInstance(PXC_CUID_ENHANCED_VIDEO):0;
 	}
 
     /**
@@ -511,9 +526,9 @@ public:
     __inline pxcStatus EnableFace(pxcCHAR *name=0) {
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
-        mdesc.cuids[0]=PXCFaceModule::CUID;
+        mdesc.cuids[0]=PXC_CUID_FACE_MODULE;
         if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
-        return EnableModule(PXCFaceModule::CUID,&mdesc);
+        return EnableModule(PXC_CUID_FACE_MODULE,&mdesc);
     }
 
     /**
@@ -523,8 +538,8 @@ public:
 	__inline pxcStatus EnableTracker(void) {
 		PXCSession::ImplDesc mdesc;
 		memset(&mdesc,0,sizeof(mdesc));
-		mdesc.cuids[0]=PXCTracker::CUID;
-		return EnableModule(PXCTracker::CUID,&mdesc);
+		mdesc.cuids[0]=PXC_CUID_TRACKER;
+		return EnableModule(PXC_CUID_TRACKER,&mdesc);
 	}
 
 
@@ -536,9 +551,9 @@ public:
     __inline pxcStatus EnableHand(pxcCHAR *name=0) {
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
-        mdesc.cuids[0]=PXCHandModule::CUID;
+        mdesc.cuids[0]=PXC_CUID_HAND_MODULE;
         if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
-        return EnableModule(PXCHandModule::CUID,&mdesc);
+        return EnableModule(PXC_CUID_HAND_MODULE,&mdesc);
     }
 
 
@@ -550,9 +565,9 @@ public:
     __inline pxcStatus EnableHandCursor(pxcCHAR *name=0) {
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
-        mdesc.cuids[0]=PXCHandCursorModule::CUID;
+        mdesc.cuids[0]=PXC_CUID_HAND_CURSOR_MODULE;
         if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
-        return EnableModule(PXCHandCursorModule::CUID,&mdesc);
+        return EnableModule(PXC_CUID_HAND_CURSOR_MODULE,&mdesc);
     }
 
     /**
@@ -563,9 +578,9 @@ public:
     __inline pxcStatus EnableBlob(pxcCHAR *name=0) {
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
-        mdesc.cuids[0]=PXCBlobModule::CUID;
+        mdesc.cuids[0]=PXC_CUID_BLOB_MODULE;
         if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
-        return EnableModule(PXCBlobModule::CUID,&mdesc);
+        return EnableModule(PXC_CUID_BLOB_MODULE,&mdesc);
     }
 
 
@@ -577,9 +592,9 @@ public:
 	__inline pxcStatus EnablePersonTracking(pxcCHAR *name = 0) {
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
-		mdesc.cuids[0] = PXCPersonTrackingModule::CUID;
+		mdesc.cuids[0] = PXC_CUID_PERSON_TRACKING_MODULE;
         if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
-		return EnableModule(PXCPersonTrackingModule::CUID, &mdesc);
+		return EnableModule(PXC_CUID_PERSON_TRACKING_MODULE, &mdesc);
     }
 
 
@@ -590,8 +605,8 @@ public:
     __inline pxcStatus EnableTouchlessController(void){
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
-        mdesc.cuids[0]=PXCTouchlessController::CUID;
-        return EnableModule(PXCTouchlessController::CUID,&mdesc);
+        mdesc.cuids[0]=PXC_CUID_TOUCHLESS_CONTROLLER;
+        return EnableModule(PXC_CUID_TOUCHLESS_CONTROLLER,&mdesc);
     }
 
     /**
@@ -601,9 +616,9 @@ public:
     __inline pxcStatus Enable3DSeg(pxcCHAR *name = NULL) {
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
-        mdesc.cuids[0]=PXC3DSeg::CUID;
+        mdesc.cuids[0]=PXC_CUID_3D_SEG;
         if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
-        return EnableModule(PXC3DSeg::CUID,&mdesc);
+        return EnableModule(PXC_CUID_3D_SEG,&mdesc);
     }
     
 
@@ -614,9 +629,9 @@ public:
     __inline pxcStatus Enable3DScan(pxcCHAR *name = NULL) {
         PXCSession::ImplDesc mdesc;
         memset(&mdesc,0,sizeof(mdesc));
-        mdesc.cuids[0]=PXC3DScan::CUID;
+        mdesc.cuids[0]=PXC_CUID_3D_SCAN;
         if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
-        return EnableModule(PXC3DScan::CUID,&mdesc);
+        return EnableModule(PXC_CUID_3D_SCAN,&mdesc);
     }
 
     /**
@@ -626,9 +641,9 @@ public:
     __inline pxcStatus EnableScenePerception(pxcCHAR *name = NULL) {
         PXCSession::ImplDesc mdesc;
         memset(&mdesc, 0, sizeof(mdesc));
-        mdesc.cuids[0] = PXCScenePerception::CUID;
+        mdesc.cuids[0] = PXC_CUID_SCENE_PERCEPTION;
         if (name) PXC_STRCPY(mdesc.friendlyName, name, sizeof(mdesc.friendlyName)/sizeof(pxcCHAR));
-        return EnableModule(PXCScenePerception::CUID, &mdesc);
+        return EnableModule(PXC_CUID_SCENE_PERCEPTION, &mdesc);
     }
 
 	/**
@@ -638,8 +653,8 @@ public:
 	__inline pxcStatus EnableEnhancedVideo(void) {
 		PXCSession::ImplDesc mdesc;
 		memset(&mdesc,0,sizeof(mdesc));
-		mdesc.cuids[0]=PXCEnhancedVideo::CUID;
-		return EnableModule(PXCEnhancedVideo::CUID,&mdesc);
+		mdesc.cuids[0]=PXC_CUID_ENHANCED_VIDEO;
+		return EnableModule(PXC_CUID_ENHANCED_VIDEO,&mdesc);
 	}
 
 	/**
@@ -649,8 +664,8 @@ public:
 	__inline pxcStatus EnableObjectRecognition(void) {
 		PXCSession::ImplDesc mdesc;
 		memset(&mdesc,0,sizeof(mdesc));
-		mdesc.cuids[0]=PXCObjectRecognitionModule::CUID;
-		return EnableModule(PXCObjectRecognitionModule::CUID,&mdesc);
+		mdesc.cuids[0]=PXC_CUID_OBJECT_RECOGNITION_MODULE;
+		return EnableModule(PXC_CUID_OBJECT_RECOGNITION_MODULE,&mdesc);
 	}
 	
     /**
@@ -665,7 +680,7 @@ public:
         @param[in] pause        If true, pause the module. Otherwise, resume the module.
     */
 	__inline void PauseScenePerception(pxcBool pause) { 
-		PauseModule(PXCScenePerception::CUID,pause); 
+		PauseModule(PXC_CUID_SCENE_PERCEPTION,pause); 
 	}
 
 		/**
@@ -673,7 +688,7 @@ public:
         @param[in] pause        If true, pause the module. Otherwise, resume the module.
     */
 	__inline void PauseObjectRecognition(pxcBool pause) { 
-		PauseModule(PXCObjectRecognitionModule::CUID,pause); 
+		PauseModule(PXC_CUID_OBJECT_RECOGNITION_MODULE,pause); 
 	}
 
 
@@ -682,7 +697,7 @@ public:
         @param[in] pause        If true, pause the module. Otherwise, resume the module.
     */
     __inline void PauseFace(pxcBool pause) { 
-        PauseModule(PXCFaceModule::CUID,pause); 
+        PauseModule(PXC_CUID_FACE_MODULE,pause); 
     }
 
     /**
@@ -690,7 +705,7 @@ public:
 		@param[in] pause	If true, pause the module. Otherwise, resume the module.
 	*/
     __inline void PauseTracker(pxcBool pause) {
-		PauseModule(PXCTracker::CUID,pause); 
+		PauseModule(PXC_CUID_TRACKER,pause); 
 	}
 
     /**
@@ -698,7 +713,7 @@ public:
         @param[in] pause        If true, pause the module. Otherwise, resume the module.
     */
     __inline void PauseHand(pxcBool pause) {
-        PauseModule(PXCHandModule::CUID,pause); 
+        PauseModule(PXC_CUID_HAND_MODULE,pause); 
     }
 
 	 /**
@@ -706,7 +721,7 @@ public:
         @param[in] pause        If true, pause the module. Otherwise, resume the module.
     */
     __inline void PauseHandCursor(pxcBool pause) {
-        PauseModule(PXCHandCursorModule::CUID,pause); 
+        PauseModule(PXC_CUID_HAND_CURSOR_MODULE,pause); 
     }
 
     /**
@@ -714,7 +729,7 @@ public:
         @param[in] pause        If true, pause the module. Otherwise, resume the module.
     */
     __inline void PauseBlob(pxcBool pause) {
-        PauseModule(PXCBlobModule::CUID,pause); 
+        PauseModule(PXC_CUID_BLOB_MODULE,pause); 
     }
 
 
@@ -723,7 +738,7 @@ public:
         @param[in] pause        If true, pause the module. Otherwise, resume the module.
     */
 	__inline void PausePersonTracking(pxcBool pause) {
-		PauseModule(PXCPersonTrackingModule::CUID, pause);
+		PauseModule(PXC_CUID_PERSON_TRACKING_MODULE, pause);
     }
 
     /**
@@ -731,7 +746,7 @@ public:
         @param[in] pause        If true, pause the module. Otherwise, resume the module.
     */
     __inline void PauseTouchlessController(pxcBool pause) {
-        PauseModule(PXCTouchlessController::CUID,pause); 
+        PauseModule(PXC_CUID_TOUCHLESS_CONTROLLER,pause); 
     }
 
     /**
@@ -739,7 +754,7 @@ public:
         @param[in] pause        If true, pause the module. Otherwise, resume the module.
     */
     __inline void Pause3DSeg(pxcBool pause) {
-        PauseModule(PXC3DSeg::CUID,pause);
+        PauseModule(PXC_CUID_3D_SEG,pause);
     }
 
 	/**
@@ -747,7 +762,7 @@ public:
 		@param[in] pause	If true, pause the module. Otherwise, resume the module.
 	*/
     __inline void PauseEnhancedVideo(pxcBool pause) {
-		PauseModule(PXCEnhancedVideo::CUID,pause); 
+		PauseModule(PXC_CUID_ENHANCED_VIDEO,pause); 
 	}
 
     /**

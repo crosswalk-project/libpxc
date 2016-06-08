@@ -108,6 +108,17 @@ public:
 		return s;
     }
 
+    /**
+    @brief Get the available stream numbers.
+    @return the number of streams.
+    */
+    __inline static pxcI32 QueryStreamNumFromScope(StreamType scope) {
+        pxcI32 nstreams = 0;
+        for (pxcI32 i = 0, j = 1; i<STREAM_LIMIT; i++, j <<= 1)
+            if (scope&j) nstreams++;
+        return nstreams;
+    }
+
     /** 
         @enum DeviceModel
         Describes the device model
@@ -121,10 +132,25 @@ public:
 		DEVICE_MODEL_SR300       = 0x00200010,    /* The Intel(R) RealSense(TM) 3D Camera, model SR300 */
 		DEVICE_MODEL_R200_ENHANCED = 0x0020001F,   /* The Intel(R) RealSense(TM) 3D Camera, model R200 and Platform Camera */
 	};
+    /**
+    @brief Get the model string representation
+    @param[in] model	 The camera model
+    @return The corresponding string representation.
+    **/
+    __inline static const pxcCHAR *DeviceModelToString(DeviceModel model) {
+        switch (model) {
+        case DEVICE_MODEL_GENERIC: return L"Generic";
+        case DEVICE_MODEL_F200: return L"F200";
+        case DEVICE_MODEL_R200:	return L"R200";
+        case DEVICE_MODEL_R200_ENHANCED: return L"R200 Enhanced";
+        case DEVICE_MODEL_SR300: return L"SR300";
+        }
+        return L"Unknown";
+    }
 
 	/** 
         @enum ConnectionType
-        Describes the Connection type of the deivce
+        Describes the Connection type of the device
     */
     enum ConnectionType {
         CONNECTION_TYPE_UNKNOWN    =  0 ,				/* Any connection type */
@@ -132,17 +158,14 @@ public:
         CONNECTION_TYPE_USB_PERIPHERAL				/* USB Peripheral Camera */
 	};
 	/** 
-		@brief Get the model string representation
-		@param[in] model	 The camera model
+		@brief Get the connection type string representation
+		@param[in] type The enumerated ConnectionType value
 		@return The corresponding string representation.
 	**/
-    __inline static const pxcCHAR *DeviceModelToString(DeviceModel model) {
-        switch (model) {
-        case DEVICE_MODEL_GENERIC: return L"Generic";
-        case DEVICE_MODEL_F200: return L"F200";
-        case DEVICE_MODEL_R200:	return L"R200";
-		case DEVICE_MODEL_R200_ENHANCED:	return L"R200 Enhanced";
-		case DEVICE_MODEL_SR300:	return L"SR300";
+    __inline static const pxcCHAR *ConnectionTypeToString(ConnectionType type) {
+        switch (type) {
+        case CONNECTION_TYPE_USB_INTEGRATED: return L"USB Integrated";
+        case CONNECTION_TYPE_USB_PERIPHERAL: return L"USB Peripheral";
         }
         return L"Unknown";
     }
@@ -182,10 +205,7 @@ public:
             @return the number of streams.
         */
         __inline pxcI32 QueryStreamNum(void) {
-            pxcI32 nstreams=0;
-            for (pxcI32 i=0,j=1;i<STREAM_LIMIT;i++,j<<=1)
-                if (streams&j) nstreams++;
-            return nstreams;
+            return QueryStreamNumFromScope(streams);
         }
     };
 
@@ -404,6 +424,7 @@ public:
 
 			
 			PROPERTY_SR300_COLOR_EXPOSURE_PRIORITY      = 0x30000, /* pxcF32        RW    Sets the Color Exposure Priority. */
+			PROPERTY_SR300_HDR_MODE						= 0x30001, /* pxcF32        RW    Sets the HDR mode (0 = DISABLED). */
 
             /* Customized properties */
             PROPERTY_CUSTOMIZED=0x04000000,                        /* CUSTOMIZED properties */
@@ -424,7 +445,8 @@ public:
 
             /* Mandatory options */
             STREAM_OPTION_MANDATORY_MASK            = 0xFFFF0000,   /* If the option is supported - the device sets this flag in the profile */
-            STREAM_OPTION_UNRECTIFIED               = 0x00010000    /* A mandatory flag to ask the device to stream unrectified images on the stream with this flag */
+            STREAM_OPTION_UNRECTIFIED               = 0x00010000,   /* A mandatory flag to ask the device to stream unrectified images on the stream with this flag */
+            STREAM_OPTION_DEPTH_CONFIDENCE          = 0x00020000    /* A mandatory flag to ask the device to attach confidence data to depth images (see PIXEL_FORMAT_DEPTH_CONFIDENCE) */
         };
 
         /** 
