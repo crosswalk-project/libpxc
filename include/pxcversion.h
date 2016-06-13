@@ -26,16 +26,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once 
 
-#define PXC_VERSION_MAJOR    10 
+#define PXC_VERSION_MAJOR    8 
 #define PXC_VERSION_MINOR    0 
-#define PXC_VERSION_BUILD    26 
-#define PXC_VERSION_REVISION 396 
+#define PXC_VERSION_BUILD    24 
+#define PXC_VERSION_REVISION 6528 
 
 #define RSSDK_REG_DEV           TEXT("Software\\Intel\\RSSDK") 
 #define RSSDK_REG_DEV32         TEXT("Software\\Wow6432Node\\Intel\\RSSDK") 
 
-#define RSSDK_REG_RUNTIME       TEXT("Software\\Intel\\RSSDK\\v10") 
-#define RSSDK_REG_RUNTIME32     TEXT("Software\\Wow6432Node\\Intel\\RSSDK\\v10") 
+#define RSSDK_REG_RUNTIME       TEXT("Software\\Intel\\RSSDK\\v8") 
+#define RSSDK_REG_RUNTIME32     TEXT("Software\\Wow6432Node\\Intel\\RSSDK\\v8") 
 
 #define RSSDK_REG_DISPATCH      RSSDK_REG_RUNTIME   TEXT("\\Dispatch") 
 #define RSSDK_REG_DISPATCH32    RSSDK_REG_RUNTIME32 TEXT("\\Dispatch") 

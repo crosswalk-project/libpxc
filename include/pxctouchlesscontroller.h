@@ -25,7 +25,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
-#include "pxcsensemanager.h"
+#include "pxccapture.h"
 #include "pxchandmodule.h"
 #include "pxchanddata.h"
 /**
@@ -45,7 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class PXCTouchlessController: public PXCBase {
 public:
 
-    PXC_CUID_OVERWRITE(PXC_CUID_TOUCHLESS_CONTROLLER);
+    PXC_CUID_OVERWRITE(PXC_UID('F','L','K','S'));
 
     struct ProfileInfo
     {

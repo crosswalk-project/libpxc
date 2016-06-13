@@ -267,8 +267,7 @@ public:
 	{
 		FACE_MODE_COLOR,
 		FACE_MODE_COLOR_PLUS_DEPTH,
-		FACE_MODE_COLOR_STILL,
-		FACE_MODE_IR
+		FACE_MODE_COLOR_STILL
 	};
 
 	DetectionConfiguration detection;

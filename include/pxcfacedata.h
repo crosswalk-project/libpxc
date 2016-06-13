@@ -88,9 +88,7 @@ public:
 		LANDMARK_GROUP_LEFT_EYEBROW = 0x0008, 
 		LANDMARK_GROUP_NOSE = 0x00010,
 		LANDMARK_GROUP_MOUTH = 0x0020,
-		LANDMARK_GROUP_JAW = 0x0040,
-		LANDMARK_GROUP_RIGHT_EAR = 0x0080,
-		LANDMARK_GROUP_LEFT_EAR = 0x0100,
+		LANDMARK_GROUP_JAW = 0x0040
 	};
 
 	struct LandmarkPointSource
@@ -291,12 +289,6 @@ public:
 	class RecognitionData
 	{
 	public:
-		struct RecognitionResult
-		{
-			pxcUID userId;
-			pxcI32 score;
-		};
-
 		/** 
 			@brief Register a user in the Recognition database.
 			@return The unique user ID assigned to the registered face by the Recognition module.
@@ -319,18 +311,6 @@ public:
 			@return The ID assigned by the Recognition module, or -1 if face was not recognized.
 		*/
 		virtual pxcUID PXCAPI QueryUserID() const = 0;
-		
-		/** 
-			@brief Returns the number of database matches (Use this before allocating output for QueryTopMatches())
-		*/
-		virtual pxcI32 PXCAPI QueryNumberOfMatches() const = 0;
-
-		/**
-			@brief Returns matching candidates in recognition database
-			@param[out] outMatches Array of matching faces, user allocated with size >= QueryNumberOfMatches(). In case of failure, output is invalid.
-			@return true if the query succeeded and the output was written, false otherwise.
-		*/
-		virtual pxcBool PXCAPI QueryMatches(RecognitionResult* outMatches) const = 0;
 
 	protected:
 		virtual ~RecognitionData() {}
@@ -556,6 +536,7 @@ public:
 	*/
 	virtual PXCFaceData::RecognitionModuleData* QueryRecognitionModule() const = 0;
 
+#pragma region
 	struct AlertData
 	{
 		/** @enum AlertType
@@ -626,7 +607,10 @@ public:
 		@see AlertData
 		@return true if the alert is fired, false otherwise.
     */
-    virtual pxcBool PXCAPI IsAlertFiredByFace(AlertData::AlertType alertEvent, pxcUID faceID, AlertData* alertData) const = 0;
+    virtual pxcBool PXCAPI IsAlertFiredByFace(AlertData::AlertType alertEvent, pxcUID faceID, AlertData* alertData) const = 0; 
+
+#pragma  endregion Alerts
+
 };
 
 /* Convenient Operators */

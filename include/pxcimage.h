@@ -69,7 +69,6 @@ public:
         PIXEL_FORMAT_DEPTH = 0x00020000,        /* 16-bit unsigned integer with precision mm. */
         PIXEL_FORMAT_DEPTH_RAW,                 /* 16-bit unsigned integer with device specific precision (call device->QueryDepthUnit()) */
         PIXEL_FORMAT_DEPTH_F32,                 /* 32-bit float-point with precision mm. */
-        PIXEL_FORMAT_DEPTH_CONFIDENCE = 0x40000004, /* Additional plane with 8-bits depth confidence (MSB) */
 
         /* STREAM_TYPE_IR */
         PIXEL_FORMAT_Y16 = 0x00040000,          /* 16-Bit Gray Image */
@@ -93,7 +92,6 @@ public:
         case PIXEL_FORMAT_DEPTH:        return (const pxcCHAR*)L"DEPTH";
         case PIXEL_FORMAT_DEPTH_F32:    return (const pxcCHAR*)L"DEPTH(FLOAT)";
         case PIXEL_FORMAT_DEPTH_RAW:    return (const pxcCHAR*)L"DEPTH(NATIVE)";
-        case PIXEL_FORMAT_DEPTH_CONFIDENCE: return (const pxcCHAR*)L"DEPTH_CONFIDENCE";
         }
         return (const pxcCHAR*)L"Unknown";
     }

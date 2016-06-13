@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 #include "pxccapture.h"
 #include "pxcsession.h"
-#include "pxcprojection.h"
 
 class PXCVideoModule : public PXCBase {
 public:
@@ -136,39 +135,4 @@ public:
         @return PXC_STATUS_NO_ERROR    Successful execution.
     */
     virtual pxcStatus PXCAPI ProcessImageAsync(PXCCapture::Sample *sample, PXCSyncPoint **sp) = 0;
-
-    /**
-        @brief Process sample synchronously (in caller thread).
-        @param[in]  sample      The sample to process
-        @return PXC_STATUS_NO_ERROR    Successful execution.
-    */
-	__inline pxcStatus ProcessSample(PXCCapture::Sample *sample) {
-        return ProcessImageAsync(sample, 0);
-    }
-
-    /**
-        @brief Pass projection object for mappings between color and depth coordinate systems
-        @param[in] projection       The projection object.
-    */
-    virtual void PXCAPI SetProjection(PXCProjection* /*projection*/) { }
-
-    /**
-        @brief enables GPU processing controls
-        @param[in] enable is a bool that enables a specific taskId on GPU.
-		@param[in] taskId provides more fine-grained controls on which task would be enbled on GPU.
-		default is enable = true and taskId = -1 (all tasks), meaning enable all tasks are on GPU. 
-    */
-    virtual void PXCAPI SetGPUExec(bool /*enable*/, pxcI32 /*taskId - reserved*/) {}
-	
-	__inline void PXCAPI SetGPUExec(bool enable) {
-		pxcI32 taskId = -1;
-		this->SetGPUExec(enable, taskId);
-	}
-	
-	__inline void PXCAPI SetGPUExec() {
-		bool enable = true;
-		pxcI32 taskId = -1;
-		this->SetGPUExec(enable, taskId);
-	}
-
 };

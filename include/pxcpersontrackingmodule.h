@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     Defines the PXCPersonTrackingModule interface, which gives access to the person module's configuration and output data.
  */
 #pragma once
-#include "pxcsensemanager.h"
+#include "pxcbase.h"
 
 class PXCPersonTrackingConfiguration;
 class PXCPersonTrackingData;
@@ -40,7 +40,7 @@ class PXCPersonTrackingData;
 class PXCPersonTrackingModule : public PXCBase 
 {
 public:
-	PXC_CUID_OVERWRITE(PXC_CUID_PERSON_TRACKING_MODULE);
+	PXC_CUID_OVERWRITE(PXC_UID('P','O','T','M'));
 
 	/** 
 		@brief returns current configuration.

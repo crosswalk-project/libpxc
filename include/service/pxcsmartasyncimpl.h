@@ -36,8 +36,6 @@ public:
     typedef pxcStatus (PXCAPI T::*AbortFunc)(pxcStatus sts);
 
     static pxcStatus SubmitTask(Ti1 *i1, To1 *o1, PXCSyncPoint **sp, T *instance, PXCSchedulerService *scheduler2, TaskFunc tfunc, AbortFunc afunc=0, const pxcCHAR* tname=0) {
-        if (!sp) return (instance->*tfunc)(i1, o1);
-
         PXCSyncPoint* sp2=(*sp)=0;
         pxcStatus sts=scheduler2->CreateSyncPoint(1, (void**)&o1,&sp2);
         if (sts<PXC_STATUS_NO_ERROR) return sts;
@@ -120,8 +118,6 @@ public:
     typedef pxcStatus (PXCAPI T::*AbortFunc)(pxcStatus sts);
 
     static pxcStatus SubmitTask(Ti1 *i1, PXCSyncPoint **sp, T *instance, PXCSchedulerService *scheduler2, TaskFunc tfunc, AbortFunc afunc=0, const pxcCHAR *tname=0) {
-        if (!sp) return (instance->*tfunc)(i1);
-
         PXCSyncPoint* sp2=(*sp)=0;
         pxcStatus sts=scheduler2->CreateSyncPoint(0,0,&sp2);
         if (sts<PXC_STATUS_NO_ERROR) return sts;
@@ -192,8 +188,6 @@ public:
     typedef pxcStatus (PXCAPI T::*AbortFunc)(pxcStatus sts);
 
     static pxcStatus SubmitTask(Ti1 *i1, Ti2 *i2, PXCSyncPoint **sp, T *instance, PXCSchedulerService *scheduler2, TaskFunc tfunc, AbortFunc afunc=0, const pxcCHAR* tname=0) {
-        if (!sp) return (instance->*tfunc)(i1, i2);
-
         PXCSyncPoint* sp2=(*sp)=0;
         pxcStatus sts=scheduler2->CreateSyncPoint(0,0,&sp2);
         if (sts<PXC_STATUS_NO_ERROR) return sts;
@@ -267,8 +261,6 @@ public:
     typedef pxcStatus (PXCAPI T::*AbortFunc)(pxcStatus sts);
 
     static pxcStatus SubmitTask(Ti1 *i1, To1 *o1, To2 *o2, PXCSyncPoint **sp, T *instance, PXCSchedulerService *scheduler2, TaskFunc tfunc, AbortFunc afunc=0, const pxcCHAR* tname=0) {
-        if (!sp) return (instance->*tfunc)(i1, o1, o2);
-
         PXCSyncPoint* sp2=(*sp)=0;
         void *outputs[2]={o1,o2};
         pxcStatus sts=scheduler2->CreateSyncPoint(2,outputs,&sp2);
@@ -353,8 +345,6 @@ public:
     typedef pxcStatus (PXCAPI T::*AbortFunc)(pxcStatus sts);
 
     static pxcStatus SubmitTask(Ti1 *i1, Ti2 *i2, To1 *o1, PXCSyncPoint **sp, T *instance, PXCSchedulerService *scheduler2, TaskFunc tfunc, AbortFunc afunc=0, const pxcCHAR* tname=0) {
-        if (!sp) return (instance->*tfunc)(i1, i2, o1);
-
         PXCSyncPoint* sp2=(*sp)=0;
         pxcStatus sts=scheduler2->CreateSyncPoint(1,(void**)&o1,&sp2);
         if (sts<PXC_STATUS_NO_ERROR) return sts;
@@ -437,8 +427,6 @@ public:
     typedef pxcStatus (PXCAPI T::*AbortFunc)(pxcStatus sts);
 
     static pxcStatus SubmitTask(Ti *inputs[], pxcI32 ninputs, To *outputs[], pxcI32 noutputs, PXCSyncPoint **sp, T *instance, PXCSchedulerService *scheduler2, TaskFunc tfunc, AbortFunc afunc=0, const pxcCHAR* tname=0) {
-        if (!sp) return (instance->*tfunc)(inputs, outputs);
-
         PXCSyncPoint* sp2=(*sp)=0;
         pxcStatus sts=scheduler2->CreateSyncPoint(noutputs,(void**)outputs,&sp2);
         if (sts<PXC_STATUS_NO_ERROR) return sts;
@@ -520,8 +508,6 @@ public:
     typedef pxcStatus (PXCAPI T::*AbortFunc)(pxcStatus sts);
 
     static pxcStatus SubmitTask(Ti *inputs[], pxcI32 ninputs, PXCSyncPoint **sp, T *instance, PXCSchedulerService *scheduler2, TaskFunc tfunc, AbortFunc afunc=0, const pxcCHAR* tname=0) {
-        if (!sp) return (instance->*tfunc)(inputs);
-
         PXCSyncPoint* sp2=(*sp)=0;
         pxcStatus sts=scheduler2->CreateSyncPoint(0,0,&sp2);
         if (sts<PXC_STATUS_NO_ERROR) return sts;

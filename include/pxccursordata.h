@@ -94,7 +94,7 @@ public:
 		, CURSOR_CLOCKWISE_CIRCLE				= 0x000002	   	// Cursor clockwise circle  - move your hand in clockwise circle while hand facing the camera.
 		, CURSOR_COUNTER_CLOCKWISE_CIRCLE    	= 0x000004      // Cursor counter clockwise circle  - move your hand in counter clockwise circle while hand facing the camera.
 		, CURSOR_HAND_CLOSING      				= 0x000008    	// Cursor hand closing - hold an open hand towards the camera and close your hand.
-		, CURSOR_HAND_OPENING      				= 0x000010    	// Cursor hand opening - hold a closed hand towards the camera and open your hand.		
+		, CURSOR_HAND_OPENING      				= 0x000010    	// Cursor hand opening - hold a closed hand towards the camera and open your hand.
     };
 
 
@@ -199,7 +199,7 @@ public:
 			@see AlertType::CURSOR_DISENGAGED	
 		*/                  
 		virtual pxcI32 PXCAPI QueryEngagementPercent() const = 0;    
-
+        
     };
 
 
@@ -338,7 +338,7 @@ public:
 
     /** 
         @brief Retrieve the cursor object data by its unique Id.
-        @param[in] cursorID - the unique ID of the requested cursor.
+        @param[in] handID - the unique ID of the requested cursor.
         @param[out] cursorData - the information for the cursor.
         
         @return PXC_STATUS_NO_ERROR - operation succeeded.
@@ -349,19 +349,6 @@ public:
     */
      virtual pxcStatus PXCAPI QueryCursorDataById(pxcUID cursorID, ICursor *& cursorData) const = 0;
 
-
-	 
-
-	/** 
-		@brief Reset the adaptive point.
-		@param[in] resetPosition - the position of the new point. should be between 0-1 in every axis.
-		@param[in] cursorID - the unique ID of the requested cursor.
-
-		@return PXC_STATUS_NO_ERROR - operation succeeded.
-		@return PXC_STATUS_PARAM_UNSUPPORTED - invalid input parameter.
-	*/                  
-	virtual pxcStatus PXCAPI ResetAdaptiveById(pxcUID cursorID, PXCPoint3DF32 resetPosition) const = 0;    
-        
    
 };
 

@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     Defines the PXCHandModule interface, which gives access the hand module's configuration and output data.
  */
 #pragma once
-#include "pxcsensemanager.h"
+#include "pxcbase.h"
 
 
 class PXCHandConfiguration;
@@ -45,7 +45,7 @@ class PXCHandModule : public PXCBase
 {
 public:
 
-    PXC_CUID_OVERWRITE(PXC_CUID_HAND_MODULE);
+    PXC_CUID_OVERWRITE(PXC_UID('H','A','N','N'));
 
 
 	/** 

@@ -86,7 +86,7 @@ public:
 	};
 	
 	struct PoseEulerAngles
-	{
+	{		
 		pxcF32 yaw;
 		pxcF32 pitch;
 		pxcF32 roll;
@@ -197,29 +197,17 @@ public:
 		virtual void PXCAPI UnregisterUserByID(pxcUID userID) = 0;
 	};
 
+#ifdef PT_MW_DEV
 	class PersonGestures
 	{
 	public:
-		enum GestureType
-		{
-			Pointing
-		};
-		struct PointingData2D
-		{
-			PXCPointF32 origin;
-			PXCPointF32 direction;
-		};
-		struct PointingData3D
-		{
-			PXCPoint3DF32 origin;
-			PXCPoint3DF32 direction;
-		};
 		struct PointingInfo
 		{
-			PointingData3D worldPointingData;
-			PointingData2D colorPointingData;
-			pxcI64 gestureStartTimeStamp;	//the timestamp for when the gesture started
-			int confidence;
+			PXCPointF32		originColor;
+			PXCPoint3DF32	originWorld;
+			PXCPointF32		directionColor;
+			PXCPoint3DF32	directionWorld;
+			int             confidence;
 		};
 
 		/**
@@ -234,36 +222,7 @@ public:
 		*/
 		virtual bool IsPointing() = 0;
 	};
-
-	class PersonExpressions
-	{
-	public:
-		enum PersonExpressionsEnum
-		{
-			NEUTRAL = 0,
-			HAPPINESS,
-			SADNESS,
-			SURPRISE,
-			FEAR,
-			ANGER,
-			DISGUST,
-			CONTEMPT
-		};
-
-		struct PersonExpressionsResult
-		{
-			pxcI32 confidence;
-			pxcI32 reserved[10];
-		};
-
-		/**
-		@brief Queries single expressions result.
-		@param[in] expression requested expression.
-		@param[out] expressionIntensityResult expression intensity.
-		@return true if expression was calculated successfully, false if expression calculation failed.
-		*/
-		virtual pxcBool PXCAPI QueryExpression(PersonExpressionsEnum expression, PersonExpressionsResult* expressionResult) const = 0;
-	};
+#endif
 
 	class PersonJoints
 	{
@@ -374,26 +333,6 @@ public:
 			pxcI32 reserved[10];
 		};
 
-		/**
-			@enum PersonOrientation
-			The current orientation of the person relative to the camera
-		*/
-		enum PersonOrientation
-		{
-			ORIENTATION_FRONTAL = 0,
-			ORIENTATION_45_DEGREE_RIGHT,
-			ORIENTATION_45_DEGREE_LEFT,
-			ORIENTATION_PROFILE_RIGHT,
-			ORIENTATION_PROFILE_LEFT,
-			ORIENTATION_REAR
-		};
-
-		struct OrientationInfo
-		{
-			PersonOrientation orientation;
-			pxcI32 confidence;
-		};
-
 	    /**	
 			@brief Return the person's unique identifier.
 		*/
@@ -416,27 +355,14 @@ public:
 		virtual PointCombined PXCAPI QueryCenterMass() = 0;
 
 		/**
-			@brief Return the location and dimensions of the tracked person's head, represented by a 2D bounding box (defined in pixels).
+		@brief Return the location and dimensions of the tracked person's head, represented by a 2D bounding box (defined in pixels).
 		*/
 		virtual BoundingBox2D PXCAPI QueryHeadBoundingBox() const = 0;
 
 		/**
-			@brief Retrieve the 3D image mask of the tracked person.
+		@brief Retrieve the 3D image mask of the tracked person.
 		*/
 		virtual PXCImage* PXCAPI QueryBlobMask() = 0;
-
-		/**
-			@brief Retrieve the orientation of the tracked person's head, represented by Euler angles
-			@param[out] pose the orientation of the tracked person's head
-			@return true if the output is valid, false in case of failure
-		*/
-		virtual pxcBool PXCAPI QueryHeadPose(PoseEulerAngles& pose) const = 0;
-
-		/**
-			@brief Calculates the orientation of the person relative to the camera. This function does the calculations synchronously, on demand, and should only be called when needed.
-			@return the orientation of the person and the confidence of the result.
-		*/
-		virtual OrientationInfo PXCAPI QueryPersonOrientation() = 0;
 
 #ifdef PT_MW_DEV
 		/**
@@ -446,7 +372,8 @@ public:
 
 		/**
 		  @brief Return the speed of person in 3D world coordinates
-		  @param[out] speed the direction and magnitude of the movement speed in meters/second
+		  @param[out] direction the direction of the movement
+		  @param[out] magnitude the magnitude of the movement in meters/second
 		  @return true if data exists, false otherwise
 		*/
 		virtual pxcBool PXCAPI QuerySpeed(SpeedInfo& speed) const = 0;
@@ -497,18 +424,11 @@ public:
 			@brief Returns the Person Joints interface
 		*/
 		virtual PXCPersonTrackingData::PersonJoints* PXCAPI QuerySkeletonJoints() = 0;
-
+#ifdef PT_MW_DEV
 		/**
 			@brief Returns the Person Gestures interface
 		*/
 		virtual PXCPersonTrackingData::PersonGestures* PXCAPI QueryGestures() = 0;
-
-		/**
-			@brief Returns the Person Expressions interface
-		*/
-		virtual PXCPersonTrackingData::PersonExpressions* PXCAPI QueryExpressions() = 0;
-
-#ifdef PT_MW_DEV
 		
 		/**
 			@brief Returns the Person Pose interface
