@@ -25,7 +25,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
-#include "pxcsensemanager.h"
 #include "pxcblobconfiguration.h"
 #include "pxcblobdata.h"
 
@@ -40,7 +39,7 @@ class PXCBlobModule : public PXCBase
 {
 public:
 
-	PXC_CUID_OVERWRITE(PXC_CUID_BLOB_MODULE);
+	PXC_CUID_OVERWRITE(PXC_UID('B','M','M','D'));
 
 	/** 
 	@brief Create a new instance of the blob module's active configuration.

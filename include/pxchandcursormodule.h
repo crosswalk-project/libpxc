@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     Defines the PXCHandCursorModule interface, which gives access the hand cursor module's configuration and output data.
  */
 #pragma once
-#include "pxcsensemanager.h"
+#include "pxcbase.h"
 
 
 class PXCCursorConfiguration;
@@ -44,7 +44,7 @@ class PXCHandCursorModule : public PXCBase
 {
 public:
 
-    PXC_CUID_OVERWRITE(PXC_CUID_HAND_CURSOR_MODULE);
+    PXC_CUID_OVERWRITE(PXC_UID('H','C','M','N'));
 
 	/** 
     @brief Create a new instance of the hand cursor module's active configuration.

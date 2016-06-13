@@ -60,7 +60,7 @@ static PXCSession *LoadSessionLibrary(wchar_t *filepath, int options) {
         typedef int (PXCAPI *FUNC_PXCSession_CreateExt)(int version_major, int version_minor, int version_build, int reserved, int options, int reserved2, PXCSession **instance);
         FUNC_PXCSession_CreateExt pPXCSession_CreateExt = (FUNC_PXCSession_CreateExt)GetProcAddress(module, "PXCSession_CreateExt");
         if (pPXCSession_CreateExt) {
-            sts = (*pPXCSession_CreateExt)(PXC_VERSION_MAJOR, PXC_VERSION_MINOR, PXC_VERSION_BUILD, PXC_VERSION_REVISION, options, 0, &instance);
+            sts = (*pPXCSession_CreateExt)(PXC_VERSION_MAJOR, PXC_VERSION_MINOR, PXC_VERSION_BUILD, 0, options, 0, &instance);
         }
     }
     if (sts >= 0 /*PXC_STATUS_NO_ERROR*/)

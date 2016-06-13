@@ -31,7 +31,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @to recognize pre-trained objects.
 */
 
-#include "pxcsensemanager.h"
 #include "pxcobjectrecognitiondata.h"
 #include "pxcobjectrecognitionconfiguration.h"
 
@@ -43,7 +42,7 @@ Use this interface to access the ObjectRecognition module's configuration and ou
 class PXCObjectRecognitionModule :public PXCBase
 {
 public:
-    PXC_CUID_OVERWRITE(PXC_CUID_OBJECT_RECOGNITION_MODULE);
+    PXC_CUID_OVERWRITE(PXC_UID('O', 'B', 'J', 'M'));
       
     /** 
     @brief Create a new instance of the ObjectRecognition module's current output data.
